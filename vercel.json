@@ -1,16 +1,4 @@
 {
-  "env": {
-    "NEXT_PUBLIC_SUPABASE_URL": "@next_public_supabase_url",
-    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@next_public_supabase_anon_key",
-    "SUPABASE_SERVICE_ROLE_KEY": "@supabase_service_role_key",
-    "GROQ_API_KEY": "@groq_api_key",
-    "APIFY_API_KEY": "@apify_api_key",
-    "SERPAPI_KEY": "@serpapi_key",
-    "RESEND_API_KEY": "@resend_api_key",
-    "FIRECRAWL_API_KEY": "@firecrawl_api_key",
-    "ADMIN_EMAILS": "@admin_emails",
-    "NEXT_PUBLIC_SITE_URL": "@next_public_site_url"
-  },
   "buildCommand": "npm run build",
   "devCommand": "npm run dev",
   "installCommand": "npm ci",
