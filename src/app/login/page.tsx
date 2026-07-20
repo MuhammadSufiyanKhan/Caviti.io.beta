@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
+import { Mail, Lock, ArrowRight, Loader2, Compass, ListChecks, Rocket } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 
 export default function LoginPage() {
@@ -39,9 +39,47 @@ export default function LoginPage() {
       {/* Left Panel */}
       <div className="hidden lg:flex lg:w-1/2 bg-[#0A0A0A] border-r border-[#1F2937] p-8 xl:p-12 flex-col justify-between">
         <div className="text-white text-xl sm:text-2xl font-bold tracking-tighter">Caviti.io</div>
-        <blockquote className="text-neutral-400 text-lg sm:text-xl font-light italic">
-          "Validate consumer demands dynamically."
-        </blockquote>
+        <div className="flex-1 flex items-center justify-center mt-10 mb-8">
+          <div className="w-full max-w-[320px]">
+            <div className="rounded-[12px] border border-white/6 bg-white/3 p-6 backdrop-blur-sm">
+              <div className="flex flex-col gap-4">
+                <div className="flex items-start gap-3">
+                  <div className="flex items-center justify-center w-9 h-9 rounded-full bg-gradient-to-br from-violet-600 to-blue-400">
+                    <Compass className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <div className="text-white font-semibold text-sm">Discover</div>
+                    <div className="text-neutral-400 text-xs">Uncover real customer problems from reviews</div>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <div className="flex items-center justify-center w-9 h-9 rounded-full bg-gradient-to-br from-slate-700 to-slate-600">
+                    <ListChecks className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <div className="text-white font-semibold text-sm">Prioritize</div>
+                    <div className="text-neutral-400 text-xs">Turn issues into a short list of high-impact fixes</div>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <div className="flex items-center justify-center w-9 h-9 rounded-full bg-gradient-to-br from-emerald-500 to-teal-400">
+                    <Rocket className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <div className="text-white font-semibold text-sm">Launch</div>
+                    <div className="text-neutral-400 text-xs">Test ad angles and creative that actually convert</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="mt-4">
+          <h3 className="text-neutral-200 text-sm sm:text-base font-semibold">Evidence-first market insights</h3>
+          <p className="text-neutral-500 mt-2 text-sm">Find what customers actually say, prioritize fixes, and test ad angles that work.</p>
+        </div>
       </div>
 
       {/* Right Panel */}
@@ -121,7 +159,7 @@ export default function LoginPage() {
           </form>
 
           <p className="text-center text-xs sm:text-sm text-[#A1A1AA]">
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
             <Link href="/signup" className="text-[#E5E7EB] font-semibold hover:underline">
               Sign up
             </Link>

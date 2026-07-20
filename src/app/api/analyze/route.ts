@@ -3,6 +3,7 @@ import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { createClient } from "@/utils/supabase/server";
 import Groq from "groq-sdk";
 import { getJson } from "serpapi";
+import { getResendClient } from "@/lib/resend";
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
@@ -249,8 +250,7 @@ export async function POST(request: Request) {
 
 // Email notification bhejo
 try {
-  const { Resend } = await import('resend');
-  const resend = new Resend(process.env.RESEND_API_KEY);
+  const resend = getResendClient();
   
   // User ka email lo
   const { data: { user: currentUser } } = await supabase.auth.getUser();

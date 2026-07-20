@@ -5,12 +5,52 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
 
+function MobileMenuButton({ mobileOpen, setMobileOpen }: { mobileOpen: boolean; setMobileOpen: (s: boolean | ((s: boolean) => boolean)) => void; }) {
+  return (
+    <button
+      onClick={() => setMobileOpen((s: boolean) => !s)}
+      aria-expanded={mobileOpen}
+      aria-label="Toggle menu"
+      className="inline-flex items-center justify-center p-2 rounded-md text-[#cbd5e1] hover:bg-white/5"
+    >
+      {mobileOpen ? (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M6 18L18 6M6 6l12 12" strokeLinecap="round" strokeLinejoin="round" /></svg>
+      ) : (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M4 7h16M4 12h16M4 17h16" strokeLinecap="round" strokeLinejoin="round" /></svg>
+      )}
+    </button>
+  );
+}
+
+function MobileNav({ mobileOpen, setMobileOpen, scrolled }: { mobileOpen: boolean; setMobileOpen: (s: boolean | ((s: boolean) => boolean)) => void; scrolled: boolean; }) {
+  if (!mobileOpen) return null;
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -6 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -6 }}
+      className="fixed top-[68px] left-0 right-0 z-40 bg-[#050508] border-t border-white/6 shadow-lg md:hidden"
+      style={{ backdropFilter: scrolled ? "blur(18px)" : undefined }}
+    >
+      <div className="px-4 py-4 space-y-3">
+        <a href="#features" onClick={() => setMobileOpen(false)} className="block text-lg text-[#cbd5e1]">Features</a>
+        <a href="#about" onClick={() => setMobileOpen(false)} className="block text-lg text-[#cbd5e1]">About Us</a>
+        <Link href="/login" onClick={() => setMobileOpen(false)} className="block text-lg text-[#cbd5e1]">Sign In</Link>
+        <Link href="/signup" onClick={() => setMobileOpen(false)} className="block">
+          <span className="inline-block bg-gradient-to-br from-[#3b82f6] to-[#6366f1] text-white px-4 py-2 rounded-lg font-semibold">Sign Up Free</span>
+        </Link>
+      </div>
+    </motion.div>
+  );
+}
+
 
 export default function LandingPage() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [scrolled, setScrolled] = useState(false);
   const { scrollY } = useScroll();
   const heroY = useTransform(scrollY, [0, 500], [0, -150]);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
 
   useEffect(() => {
@@ -18,6 +58,8 @@ export default function LandingPage() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -100,69 +142,97 @@ export default function LandingPage() {
 
   const features = [
     {
-      icon: "🛑",
       title: "Vulnerabilities",
       desc: "Find the real reasons products fail (negative points, friction, and weak claims) before you sell them.",
+      icon: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" style={{ width: 30, height: 30 }}>
+          <path d="M12 6.5c-3.31 0-6 2.69-6 6v2c0 3.31 2.69 6 6 6s6-2.69 6-6v-2c0-3.31-2.69-6-6-6Z" />
+          <path d="M8.5 11.5h7" strokeLinecap="round" />
+          <path d="M12 9v5" strokeLinecap="round" />
+        </svg>
+      ),
     },
     {
-      icon: "🛠️",
-      title: "Factory Fix",
-      desc: "Get copy‑paste ready technical instructions to send to suppliers and close the gaps.",
+      title: "Ad Angles",
+      desc: (
+        <>
+          <span>Supplier‑ready specs, prioritized for quick fixes.</span>
+          <br />
+          <span>Fix issues fast — launch with confidence.</span>
+        </>
+      ),
+      icon: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" style={{ width: 30, height: 30 }}>
+          <path d="M7 17l10-10" strokeLinecap="round" />
+          <path d="M7 7h6" strokeLinecap="round" />
+          <path d="M17 17v-6" strokeLinecap="round" />
+          <path d="M15 5h4v4" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      ),
     },
     {
-      icon: "📣",
       title: "Ad Hooks",
       desc: "Turn vulnerabilities into high‑intent creative angles that increase conversion from day one.",
+      icon: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" style={{ width: 30, height: 30 }}>
+          <path d="M7 12c0-2.76 2.24-5 5-5s5 2.24 5 5v3.5" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M9 12h6" strokeLinecap="round" />
+          <path d="M14 19.5v-3.5" strokeLinecap="round" />
+        </svg>
+      ),
+    },
+    {
+      title: "Scripts",
+      desc: "Build high-converting ad scripts and outreach sequences that turn competitor weaknesses into winning copy.",
+      icon: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" style={{ width: 30, height: 30 }}>
+          <path d="M5 5h14v14H5z" />
+          <path d="M8.5 8.5h7" strokeLinecap="round" />
+          <path d="M8.5 11.5h7" strokeLinecap="round" />
+          <path d="M8.5 14.5h4" strokeLinecap="round" />
+        </svg>
+      ),
     },
   ];
 
-
   return (
-    <div style={{ background: "#050508", minHeight: "100vh", color: "white", fontFamily: "var(--font-geist-sans)", overflowX: "hidden" }}>
-      <canvas ref={canvasRef} style={{ position: "fixed", top: 0, left: 0, zIndex: 0 }} />
+    <div className="bg-[#050508] min-h-screen text-white overflow-x-hidden px-4 sm:px-8 lg:px-16">
+      <canvas ref={canvasRef} className="hidden sm:block fixed top-0 left-0 z-0" />
 
       {/* Gradient overlays */}
-      <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "radial-gradient(ellipse at 50% 0%, rgba(59,130,246,0.08) 0%, transparent 60%)", pointerEvents: "none", zIndex: 1 }} />
+      <div className="fixed inset-0 pointer-events-none z-10" style={{ background: "radial-gradient(ellipse at 50% 0%, rgba(59,130,246,0.08) 0%, transparent 60%)" }} />
 
       {/* Navbar */}
-      <nav style={{
-        position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
-        padding: "0 48px", height: "68px",
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        background: scrolled ? "rgba(5,5,8,0.85)" : "transparent",
-        backdropFilter: scrolled ? "blur(24px)" : "none",
-        borderBottom: scrolled ? "1px solid rgba(255,255,255,0.06)" : "none",
-        transition: "all 0.4s ease",
-      }}>
-        <div className="flex items-center gap-2" style={{ cursor: "pointer" }}>
-          <Image
-            src="/logo.png"
-            alt="Caviti Logo"
-            width={20}
-            height={20}
-            className="rounded-full"
-          />
-          <span className="text-white font-bold text-xl" style={{ fontSize: 20 }}>
-            caviti
-          </span>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "32px", fontSize: "14px" }}>
+      <nav
+        className="fixed top-0 left-0 right-0 z-50 px-4 sm:px-8 lg:px-16"
+        style={{ height: 68, background: scrolled ? "rgba(5,5,8,0.85)" : "transparent", backdropFilter: scrolled ? "blur(24px)" : "none", borderBottom: scrolled ? "1px solid rgba(255,255,255,0.06)" : "none", transition: "all 0.3s ease" }}
+      >
+        <div className="max-w-7xl mx-auto h-[68px] flex items-center justify-between">
+          <div className="flex items-center gap-2" style={{ cursor: "pointer" }}>
+            <Image src="/logo.png" alt="Caviti Logo" width={20} height={20} className="rounded-full" />
+            <span className="text-white font-bold text-xl" style={{ fontSize: 20 }}>caviti</span>
+          </div>
 
-          <a href="#features" style={{ color: "#64748b", textDecoration: "none", transition: "color 0.2s" }}>Features</a>
-          <a href="#how-it-works" style={{ color: "#64748b", textDecoration: "none" }}>How It Works</a>
-          <a href="#pricing" style={{ color: "#64748b", textDecoration: "none" }}>Pricing</a>
-          <Link href="/login" style={{ color: "#94a3b8", textDecoration: "none" }}>Sign In</Link>
-          <Link href="/signup" style={{
-            background: "linear-gradient(135deg, #3b82f6, #6366f1)",
-            color: "white", padding: "9px 22px", borderRadius: "10px",
-            fontSize: "14px", fontWeight: 600, textDecoration: "none",
-            boxShadow: "0 0 20px rgba(59,130,246,0.25)",
-          }}>Sign Up Free</Link>
+          {/* Desktop links */}
+          <div className="hidden md:flex items-center gap-8 text-sm">
+            <a href="#features" className="text-[#64748b] hover:text-white transition-colors">Features</a>
+            <a href="#about" className="text-[#64748b] hover:text-white transition-colors">About Us</a>
+            <Link href="/login" className="text-[#94a3b8] hover:text-white">Sign In</Link>
+            <Link href="/signup" className="inline-flex items-center bg-gradient-to-br from-[#3b82f6] to-[#6366f1] text-white px-4 py-2 rounded-lg font-semibold shadow-md">Sign Up Free</Link>
+          </div>
+
+          {/* Mobile menu button */}
+          <div className="md:hidden flex items-center">
+            <MobileMenuButton mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
+          </div>
         </div>
       </nav>
 
+      {/* Mobile nav drawer (rendered at top of page) */}
+      <MobileNav mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} scrolled={scrolled} />
+
       {/* Hero */}
-      <motion.div style={{ y: heroY, position: "relative", zIndex: 10, minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "0 24px" }}>
+      <motion.div style={{ y: heroY }} className="relative z-20 min-h-[65vh] sm:min-h-[75vh] flex flex-col items-center justify-center text-center py-8">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
           style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "rgba(59,130,246,0.08)", border: "1px solid rgba(59,130,246,0.2)", borderRadius: "100px", padding: "6px 18px", marginBottom: "28px", backdropFilter: "blur(10px)" }}>
           <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#3b82f6", animation: "pulse 2s infinite" }} />
@@ -170,16 +240,16 @@ export default function LandingPage() {
         </motion.div>
 
         <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-          style={{ fontSize: "clamp(44px, 8vw, 88px)", fontWeight: 900, lineHeight: 1.02, letterSpacing: "-3px", marginBottom: "28px" }}>
-          Discover Your<br />
-          <span style={{ background: "linear-gradient(135deg, #60a5fa, #a78bfa, #818cf8)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-            Market Gap
+          style={{ fontSize: "clamp(32px, 6vw, 72px)", fontWeight: 900, lineHeight: 1.02, letterSpacing: "-1px", marginBottom: "24px", textTransform: "uppercase" }}>
+          FIND WHAT YOUR COMPETITORS’ CUSTOMERS HATE<br />
+          <span style={{ display: "inline-block", marginTop: "-4px", background: "linear-gradient(135deg, #60a5fa, #a78bfa, #818cf8)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+            AND TURN IT INTO YOUR NEXT WINNING ANGLE.
           </span>
         </motion.h1>
 
         <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
-          style={{ fontSize: "18px", color: "#475569", maxWidth: "520px", lineHeight: 1.8, marginBottom: "48px" }}>
-          AI-powered competitor analysis for ambitious founders. Find gaps your competitors missed using real market data.
+          className="text-[#cbd5e1] text-base sm:text-lg max-w-xl leading-relaxed mb-12">
+          Caviti analyzes thousands of customer reviews to uncover hidden product flaws, market opportunities, and ad ideas your competitors are missing.
         </motion.p>
 
         {/* Hero CTA (single button only) */}
@@ -187,7 +257,7 @@ export default function LandingPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
-          style={{ display: "flex", gap: "16px", flexWrap: "wrap", justifyContent: "center", marginBottom: "80px" }}
+          className="flex gap-4 flex-wrap justify-center mb-14"
         >
           <Link
             href="/signup"
@@ -210,172 +280,75 @@ export default function LandingPage() {
       </motion.div>
 
       {/* Features */}
-      <div id="features" style={{ position: "relative", zIndex: 10, maxWidth: "1200px", margin: "0 auto", padding: "96px 24px 80px" }}>
-        <div style={{ textAlign: "center", marginBottom: "48px" }}>
-          <h2 style={{ fontSize: "44px", fontWeight: 900, letterSpacing: "-2px", marginBottom: "16px" }}>
-            Find the failure points that stop sales
+      <div id="features" className="relative z-20 max-w-6xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-12">
+          <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight uppercase text-white mb-4">
+            TURN CUSTOMER PAIN INTO CLEARER GROWTH
           </h2>
-          <p style={{ color: "#475569", fontSize: "16px", maxWidth: "560px", margin: "0 auto", lineHeight: 1.7 }}>
-            Three focused outputs—so you can fix the product, the story, and the hooks before you launch.
+          <p className="text-[#cbd5e1] text-sm sm:text-base max-w-3xl mx-auto leading-relaxed">
+            We turn customer frustration into clear next steps: sharper product fixes, stronger positioning, and ad angles that feel relevant from the first impression.
           </p>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "16px" }}>
-          {features.map((f, i) => (
-            <motion.div
-              key={i}
-              whileHover={{ y: -6, scale: 1.01 }}
-              transition={{ type: "spring", stiffness: 300 }}
-              style={{
-                background: "rgba(255,255,255,0.025)",
-                border: "1px solid rgba(255,255,255,0.07)",
-                borderRadius: "20px",
-                padding: "32px",
-                backdropFilter: "blur(20px)",
-                boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
-              }}
-            >
-              <div style={{ fontSize: "36px", marginBottom: "18px" }}>{f.icon}</div>
-              <h3 style={{ fontSize: "18px", fontWeight: 800, marginBottom: "10px" }}>{f.title}</h3>
-              <p style={{ fontSize: "14px", color: "#94a3b8", lineHeight: 1.75 }}>{f.desc}</p>
-            </motion.div>
-          ))}
+        <div className="flex justify-center">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-4xl">
+            {features.map((f, i) => (
+              <motion.div
+                key={i}
+                whileHover={{ y: -6, scale: 1.01 }}
+                transition={{ type: "spring", stiffness: 300 }}
+                style={{
+                  background: "rgba(15,23,42,0.92)",
+                  border: "1px solid rgba(148,163,184,0.24)",
+                  borderRadius: "24px",
+                  padding: "36px",
+                  minHeight: "220px",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "center",
+                  backdropFilter: "blur(24px)",
+                  boxShadow: "0 24px 80px rgba(15,23,42,0.28)",
+                  color: "#f8fafc",
+                }}
+              >
+                <div style={{ width: "56px", height: "56px", margin: "0 auto 18px", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "18px", background: "rgba(255,255,255,0.14)", color: "#2563eb", boxShadow: "0 0 0 1px rgba(59,130,246,0.08), inset 0 0 20px rgba(59,130,246,0.12)" }}>
+                  {f.icon}
+                </div>
+                <h3 style={{ fontSize: "18px", fontWeight: 800, marginBottom: "10px", letterSpacing: "0.02em", color: "#f8fafc" }}>{f.title}</h3>
+                <p style={{ fontSize: "14px", color: "#cbd5e1", lineHeight: 1.8 }}>{f.desc}</p>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Pricing */}
-      <div id="pricing" style={{ position: "relative", zIndex: 10, maxWidth: "1200px", margin: "0 auto", padding: "0 24px 120px" }}>
-        <div style={{ textAlign: "center", marginBottom: "56px" }}>
-          <h2 style={{ fontSize: "44px", fontWeight: 900, letterSpacing: "-2px", marginBottom: "16px" }}>
-            Pricing
+      {/* About Us */}
+      <div id="about" style={{ position: "relative", zIndex: 10, maxWidth: "1160px", margin: "0 auto", padding: "0 0 120px" }}>
+        <motion.div
+          whileHover={{ y: -4, scale: 1.01 }}
+          style={{
+            background: "linear-gradient(135deg, rgba(59,130,246,0.12), rgba(139,92,246,0.1))",
+            border: "1px solid rgba(129,140,248,0.28)",
+            borderRadius: "24px",
+            padding: "42px",
+            backdropFilter: "blur(20px)",
+            boxShadow: "0 10px 34px rgba(0,0,0,0.24)",
+          }}
+        >
+          <p style={{ fontSize: "12px", letterSpacing: "0.24em", textTransform: "uppercase", color: "#93c5fd", fontWeight: 800, marginBottom: "12px" }}>
+            About Us
+          </p>
+          <h2 style={{ fontSize: "34px", fontWeight: 900, letterSpacing: "-1px", marginBottom: "16px" }}>
+            We help brands turn customer frustration into clear growth opportunities.
           </h2>
-          <p style={{ color: "#475569", fontSize: "16px" }}>Free to start—Pro to keep winning</p>
-        </div>
-
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "20px" }}>
-          <motion.div
-            whileHover={{ y: -6 }}
-            style={{
-              background: "rgba(255,255,255,0.025)",
-              border: "1px solid rgba(255,255,255,0.07)",
-              borderRadius: "20px",
-              padding: "36px",
-              backdropFilter: "blur(20px)",
-              boxShadow: "0 8px 32px rgba(0,0,0,0.2)",
-            }}
-          >
-            <p style={{ fontSize: "14px", color: "#94a3b8", marginBottom: "8px", fontWeight: 700 }}>Free</p>
-            <p style={{ fontSize: "48px", fontWeight: 900, marginBottom: "18px", letterSpacing: "-2px" }}>
-              $0
-              <span style={{ fontSize: "14px", color: "#475569", fontWeight: 500 }}>/mo</span>
-            </p>
-            <ul style={{ listStyle: "none", padding: 0, marginBottom: "28px", display: "flex", flexDirection: "column", gap: "14px" }}>
-              {[
-                { label: "3 analyses", locked: false },
-                { label: "Vulnerabilities", locked: false },
-                { label: "Factory Fix", locked: true },
-                { label: "Ad Hooks", locked: true },
-              ].map((f, j) => (
-                <li key={j} style={{ fontSize: "14px", color: "#94a3b8", display: "flex", alignItems: "center", gap: "10px" }}>
-                  {f.locked ? (
-                    <span aria-hidden style={{ color: "#64748b", fontSize: "16px" }}>🔒</span>
-                  ) : (
-                    <span style={{ color: "#3b82f6", fontSize: "16px" }}>✓</span>
-                  )}
-                  {f.label}
-                </li>
-              ))}
-            </ul>
-            <Link
-              href="/dashboard"
-              style={{
-                display: "block",
-                textAlign: "center",
-                background: "rgba(255,255,255,0.06)",
-                color: "white",
-                padding: "14px",
-                borderRadius: "12px",
-                fontSize: "14px",
-                fontWeight: 700,
-                textDecoration: "none",
-                border: "1px solid rgba(255,255,255,0.1)",
-              }}
-            >
-              Start Free Analysis
-            </Link>
-          </motion.div>
-
-          <motion.div
-            whileHover={{ y: -6 }}
-            style={{
-              background: "linear-gradient(135deg, rgba(59,130,246,0.12), rgba(139,92,246,0.12))",
-              border: "1px solid rgba(99,102,241,0.4)",
-              borderRadius: "20px",
-              padding: "36px",
-              backdropFilter: "blur(20px)",
-              boxShadow: "0 0 60px rgba(59,130,246,0.12), inset 0 1px 0 rgba(255,255,255,0.1)",
-            }}
-          >
-            <div style={{
-              fontSize: "11px",
-              color: "#818cf8",
-              background: "rgba(99,102,241,0.15)",
-              border: "1px solid rgba(99,102,241,0.3)",
-              padding: "4px 12px",
-              borderRadius: "100px",
-              display: "inline-block",
-              marginBottom: "16px",
-              fontWeight: 800,
-              letterSpacing: "0.2px",
-            }}>PRO</div>
-
-            <p style={{ fontSize: "14px", color: "#94a3b8", marginBottom: "8px", fontWeight: 700 }}>Pro</p>
-            <p style={{ fontSize: "48px", fontWeight: 900, marginBottom: "18px", letterSpacing: "-2px" }}>
-              $29
-              <span style={{ fontSize: "14px", color: "#475569", fontWeight: 500 }}>/month</span>
-            </p>
-
-            <ul style={{ listStyle: "none", padding: 0, marginBottom: "28px", display: "flex", flexDirection: "column", gap: "14px" }}>
-              {[
-                "Unlimited analyses",
-                "All 3 boxes unlocked",
-                "Priority access",
-                "Deeper gap breakdown",
-              ].map((f, j) => (
-                <li key={j} style={{ fontSize: "14px", color: "#94a3b8", display: "flex", alignItems: "center", gap: "10px" }}>
-                  <span style={{ color: "#818cf8", fontSize: "16px" }}>✓</span> {f}
-                </li>
-              ))}
-            </ul>
-
-            <Link
-              href="https://gumroad.com"
-              style={{
-                display: "block",
-                textAlign: "center",
-                background: "linear-gradient(135deg, #3b82f6, #6366f1)",
-                color: "white",
-                padding: "14px",
-                borderRadius: "12px",
-                fontSize: "14px",
-                fontWeight: 800,
-                textDecoration: "none",
-                border: "none",
-                boxShadow: "0 0 30px rgba(59,130,246,0.3)",
-              }}
-            >
-              Start Pro Analysis
-            </Link>
-
-            <p style={{ marginTop: 10, fontSize: 12, color: "#94a3b8" }}>
-              *Billing per your plan settings.
-            </p>
-          </motion.div>
-        </div>
+          <p style={{ fontSize: "16px", color: "#cbd5e1", lineHeight: 1.8, maxWidth: "860px" }}>
+            Caviti brings together review intelligence, market signals, and messaging strategy so teams can spot what is breaking trust, refine their story, and launch with sharper hooks that actually resonate.
+          </p>
+        </motion.div>
       </div>
 
       {/* Footer */}
-      <footer style={{ position: "relative", zIndex: 10, borderTop: "1px solid rgba(255,255,255,0.06)", padding: "32px 48px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <footer style={{ position: "relative", zIndex: 10, borderTop: "1px solid rgba(255,255,255,0.06)", padding: "32px 64px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div className="flex items-center gap-2">
           <Image
             src="/logo.png"

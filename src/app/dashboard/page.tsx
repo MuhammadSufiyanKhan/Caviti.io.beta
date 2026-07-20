@@ -35,7 +35,6 @@ export default function DashboardPage() {
         return;
       }
       setIsAuthenticated(true);
-      fetchDashboardData();
     };
     checkAuth();
   }, [supabase, router]);
@@ -251,7 +250,8 @@ export default function DashboardPage() {
               <p className="text-sm sm:text-base text-[#334155]">No reports yet. Analyze your first product above.</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <>
+            <div className="hidden sm:block overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-[#1F2937]">
@@ -262,6 +262,7 @@ export default function DashboardPage() {
                 </thead>
                 <tbody>
                   {reports.map((report, idx) => {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const data = report.market_data as any;
                     return (
                       <motion.tr key={report.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: idx * 0.05 }}
@@ -300,6 +301,42 @@ export default function DashboardPage() {
                 </tbody>
               </table>
             </div>
+
+            {/* Mobile list view */}
+            <div className="sm:hidden px-4 py-3 space-y-3">
+              {reports.map((report, idx) => {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const data = report.market_data as any;
+                return (
+                  <motion.div key={report.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: idx * 0.04 }}
+                    className="bg-[#0B0B0B] border border-[#1F2937] rounded-lg p-3 flex items-start justify-between">
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold truncate capitalize">{report.product_name}</p>
+                      {data?.url && (
+                        <p className="text-xs text-[#334155] flex items-center gap-2 mt-1 truncate">
+                          <ExternalLink size={12} className="flex-shrink-0" />
+                          <span className="truncate">{data.url.replace(/^https?:\/\//, "").slice(0, 60)}</span>
+                        </p>
+                      )}
+                      <div className="mt-2 flex items-center gap-2">
+                        <span className="inline-flex items-center gap-1 bg-green-500/10 border border-green-500/30 text-green-400 px-2 py-0.5 rounded-full text-[11px]">
+                          <CheckCircle2 size={12} /> Complete
+                        </span>
+                        <span className="text-xs text-[#334155]">{new Date(report.created_at).toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Link href={`/dashboard/report/${report.id}`} className="text-xs bg-blue-500/10 border border-blue-500/30 text-blue-400 px-2 py-1 rounded-lg hover:bg-blue-500/20 transition">View →</Link>
+                      <button onClick={() => handleDelete(report.id)} disabled={deletingId === report.id}
+                        className="text-xs bg-red-500/10 border border-red-500/30 text-red-400 p-1 rounded-lg hover:bg-red-500/20 transition disabled:opacity-50">
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+            </>
           )}
         </motion.div>
       </main>

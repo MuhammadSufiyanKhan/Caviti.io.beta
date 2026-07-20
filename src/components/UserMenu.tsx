@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
-import { LogOut, Settings } from "lucide-react";
+import { LogOut } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -62,16 +62,6 @@ export default function UserMenu() {
           <div className="px-4 py-3 border-b border-slate-700">
             <p className="text-xs text-slate-400">Logged in as</p>
             <p className="text-sm font-semibold text-white truncate">{user.email}</p>
-          </div>
-
-          <div className="px-4 py-2">
-            <Link
-              href="/dashboard/settings"
-              className="flex items-center gap-2 px-3 py-2 text-sm text-slate-200 hover:bg-slate-800 rounded transition-colors"
-            >
-              <Settings size={16} />
-              Settings
-            </Link>
           </div>
 
           <div className="border-t border-slate-700 px-4 py-2">

@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
-import { resend } from '@/lib/resend';
+import { getResendClient } from '@/lib/resend';
 import InvoiceEmail from '@/emails/invoice';
 
 export async function POST(request: Request) {
   try {
     const { email, planName, amount } = await request.json();
 
+    const resend = getResendClient();
     const data = await resend.emails.send({
       from: 'Caviti <onboarding@resend.dev>',
       to: [email],
