@@ -2,6 +2,8 @@ import { createClient } from "@/utils/supabase/server";
 
 import { requireAdmin } from "../../admin-guard";
 
+export const dynamic = "force-dynamic";
+
 import AnalysesLogClient, {
   type AdminReportRow,
 } from "./AnalysesLogClient";
@@ -9,22 +11,23 @@ import AnalysesLogClient, {
 export default async function AdminAnalysesLogPage({
   searchParams,
 }: {
-  searchParams?: { q?: string; date?: string };
+  searchParams: Promise<{ q?: string; date?: string }>;
 }) {
   await requireAdmin();
 
   const supabase = await createClient();
+  const { q = "", date = "" } = await searchParams;
 
-  const q = (searchParams?.q ?? "").trim();
-  const date = (searchParams?.date ?? "").trim();
+  const normalizedQ = q.trim();
+  const normalizedDate = date.trim();
 
   const query = supabase
     .from("reports")
     .select("id,user_id,product_name,created_at")
     .order("created_at", { ascending: false });
 
-  const { data } = await (q
-    ? query.or(`user_id.ilike.%${q}%,product_name.ilike.%${q}%`)
+  const { data } = await (normalizedQ
+    ? query.or(`user_id.ilike.%${normalizedQ}%,product_name.ilike.%${normalizedQ}%`)
     : query);
 
   const rows = (Array.isArray(data) ? data : []) as AdminReportRow[];
@@ -32,8 +35,8 @@ export default async function AdminAnalysesLogPage({
   // Client will apply date filter UI; keep this for server-side narrowing if needed.
   return (
     <AnalysesLogClient
-      initialQ={q}
-      initialDate={date}
+      initialQ={normalizedQ}
+      initialDate={normalizedDate}
       rows={rows}
     />
   );

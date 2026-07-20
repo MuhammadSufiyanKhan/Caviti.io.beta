@@ -5,13 +5,12 @@ import { requireAdmin } from "../../admin-guard";
 export default async function AdminPaymentsPage({
   searchParams,
 }: {
-  searchParams?: { status?: "paid" | "pending" | "failed" };
+  searchParams: Promise<{ status?: "paid" | "pending" | "failed" }>;
 }) {
   await requireAdmin();
 
   const supabase = await createClient();
-
-  const status = searchParams?.status;
+  const { status } = await searchParams;
 
   let query = supabase
     .from("payments")

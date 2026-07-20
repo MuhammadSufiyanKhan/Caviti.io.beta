@@ -1,3 +1,6 @@
+
+
+
 # Caviti.io.beta
 
 Caviti is an AI-powered market intelligence platform for discovering customer pain points, identifying competitor weaknesses, and turning those insights into high-converting ad angles. The app combines a polished landing experience, Supabase-backed authentication, AI-heavy analysis pipelines, and an admin dashboard to help users transform public product information into actionable market intelligence.
