@@ -1,9 +1,9 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { User, Mail, Lock, ArrowRight, UserCircle, Loader2, Compass, ListChecks, Rocket } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
-import { buildAppUrl } from "@/lib/urls";
+import { User, Mail, Lock, ArrowRight, UserCircle, Loader2, Compass, ListChecks, Rocket } from "lucide-react";
 
 export default function SignupPage() {
   const [firstName, setFirstName] = useState("");
@@ -13,26 +13,10 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
-  const [emailSentTo, setEmailSentTo] = useState<string | null>(null);
-  const [emailFrom, setEmailFrom] = useState<string | null>(null);
-  const [deliveryId, setDeliveryId] = useState<string | null>(null);
-  const [step, setStep] = useState<"form" | "verify">("form");
-  const [cooldownSeconds, setCooldownSeconds] = useState(0);
+  const router = useRouter();
   const supabase = createClient();
 
-  useEffect(() => {
-    if (cooldownSeconds <= 0) {
-      return;
-    }
-
-    const timer = window.setInterval(() => {
-      setCooldownSeconds((value) => (value > 0 ? value - 1 : 0));
-    }, 1000);
-
-    return () => window.clearInterval(timer);
-  }, [cooldownSeconds]);
-
-  const handleSendOtp = async (e?: React.FormEvent) => {
+  const handleSignUp = async (e?: React.FormEvent) => {
     e?.preventDefault();
     if (!firstName || !lastName || !email || !password) {
       setError("Please fill in all fields!");
@@ -50,28 +34,42 @@ export default function SignupPage() {
     setSuccessMessage("");
 
     try {
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          shouldCreateUser: true,
-          // Redirect users to the dashboard after they click the verification link
-          emailRedirectTo: buildAppUrl("/dashboard"),
+      const response = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
+        body: JSON.stringify({
+          email,
+          password,
+          firstName,
+          lastName,
+        }),
       });
 
-      if (error) {
-        throw new Error(error.message || "Unable to send verification link");
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data?.error || "Unable to create your account");
       }
 
-      const safeSentTo = email.trim().toLowerCase();
-      setSuccessMessage(
-        `A verification link has been sent to ${safeSentTo}. Open it to finish creating your account.`
-      );
-      setEmailSentTo(safeSentTo);
-      setEmailFrom("Supabase");
-      setDeliveryId(null);
-      setStep("verify");
-      setCooldownSeconds(60);
+      // Try to sign in the user to create a session; regardless of sign-in result
+      // we redirect to the dashboard after account creation so duplicate accounts
+      // are prevented server-side and the user lands in the app.
+      try {
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+        // If sign-in returned a session, redirect immediately. Otherwise still
+        // redirect to dashboard (user can sign in manually if needed).
+        if (signInData?.session) {
+          router.push("/dashboard");
+          return;
+        }
+      } catch (e) {
+        console.error('Sign-in after signup failed:', e);
+      }
+
+      // Redirect to dashboard even if sign-in didn't produce a session.
+      router.push("/dashboard");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "An error occurred. Please try again.");
       console.error(err);
@@ -143,29 +141,12 @@ export default function SignupPage() {
           )}
 
           {successMessage && (
-            <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-md p-3 text-emerald-200 text-xs sm:text-sm space-y-2">
+            <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-md p-3 text-emerald-200 text-xs sm:text-sm">
               <p>{successMessage}</p>
-              {emailSentTo && (
-                <p className="text-[#D1FAE5]">Sent to: <span className="font-semibold text-white">{emailSentTo}</span></p>
-              )}
-              {emailFrom && (
-                <p className="text-[#D1FAE5]">From: <span className="font-semibold text-white">{emailFrom}</span></p>
-              )}
-              {deliveryId && (
-                <p className="text-[#D1FAE5]">Delivery ID: <span className="font-semibold text-white">{deliveryId}</span></p>
-              )}
             </div>
           )}
 
-          {step === "verify" && (
-            <div className="rounded-xl border border-[#1F2937] bg-[#0F172A]/70 p-3 text-left text-xs sm:text-sm text-[#CBD5E1]">
-              <p className="font-medium text-white">We sent a verification link to {email || "your email"}.</p>
-              <p className="mt-1 text-[#94A3B8]">Open the link in your inbox or spam folder to finish creating your account.</p>
-            </div>
-          )}
-
-          {step === "form" ? (
-            <form className="space-y-3 sm:space-y-4" onSubmit={handleSendOtp}>
+          <form className="space-y-3 sm:space-y-4" onSubmit={handleSignUp}>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-neutral-400">First Name</label>
@@ -209,24 +190,15 @@ export default function SignupPage() {
                 {loading ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Sending Link...
+                    Creating Account...
                   </>
                 ) : (
                   <>
-                    Verify Account <ArrowRight className="w-4 h-4" />
+                    Create Account <ArrowRight className="w-4 h-4" />
                   </>
                 )}
               </button>
             </form>
-          ) : (
-            <div className="space-y-3 sm:space-y-4">
-              <button type="button" onClick={() => handleSendOtp()} disabled={loading || cooldownSeconds > 0}
-                className="w-full text-neutral-300 py-2.5 rounded-md font-medium transition border border-[#1F2937] hover:bg-[#111111] text-sm disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {cooldownSeconds > 0 ? `Resend Link in 00:${cooldownSeconds.toString().padStart(2, "0")}` : "Resend Magic Link"}
-              </button>
-            </div>
-          )}
 
           <p className="text-center text-xs sm:text-sm text-[#A1A1AA]">
             Already have an account?{" "}
