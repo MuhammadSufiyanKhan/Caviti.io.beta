@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient, createServiceRoleClient } from "@/utils/supabase/server";
+import { createClient, createServiceRoleClient, ensureUserProfile } from "@/utils/supabase/server";
 import { consumeOtp } from "@/lib/otp";
 
 export async function POST(request: Request) {
@@ -17,8 +17,9 @@ export async function POST(request: Request) {
     }
 
     const adminSupabase = createServiceRoleClient();
+    let createdUserId: string | null = null;
     try {
-      await adminSupabase.auth.admin.createUser({
+      const { data: createdUserData, error: createError } = await adminSupabase.auth.admin.createUser({
         email: normalizedEmail,
         password,
         email_confirm: true,
@@ -28,11 +29,28 @@ export async function POST(request: Request) {
           full_name: `${firstName} ${lastName}`,
         },
       });
+
+      if (createError) {
+        const message = createError.message || String(createError);
+        if (!message.toLowerCase().includes("already registered") && !message.toLowerCase().includes("already exists")) {
+          throw createError;
+        }
+      } else if (createdUserData.user?.id) {
+        createdUserId = createdUserData.user.id;
+      }
     } catch (createError) {
       const message = createError instanceof Error ? createError.message : String(createError);
       if (!message.toLowerCase().includes("already registered") && !message.toLowerCase().includes("already exists")) {
         throw createError;
       }
+    }
+
+    if (createdUserId) {
+      await ensureUserProfile(createdUserId, normalizedEmail, {
+        first_name: firstName,
+        last_name: lastName,
+        full_name: `${firstName} ${lastName}`,
+      });
     }
 
     const supabase = await createClient();

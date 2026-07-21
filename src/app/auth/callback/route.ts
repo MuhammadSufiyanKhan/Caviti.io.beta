@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { buildAppUrl } from '@/lib/urls'
+import { ensureUserProfile } from '@/utils/supabase/server'
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
@@ -23,7 +24,11 @@ export async function GET(request: Request) {
         },
       }
     )
-    await supabase.auth.exchangeCodeForSession(code)
+    const { data: { user }, error } = await supabase.auth.exchangeCodeForSession(code)
+
+    if (!error && user) {
+      await ensureUserProfile(user.id, user.email, user.user_metadata)
+    }
   }
 
   return NextResponse.redirect(buildAppUrl('/dashboard'))
