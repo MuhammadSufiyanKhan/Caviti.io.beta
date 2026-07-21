@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { User, Mail, Lock, ArrowRight, UserCircle, Loader2, Compass, ListChecks, Rocket } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
+import { buildAppUrl } from "@/lib/urls";
 
 export default function SignupPage() {
   const [firstName, setFirstName] = useState("");
@@ -54,7 +55,7 @@ export default function SignupPage() {
         options: {
           shouldCreateUser: true,
           // Redirect users to the dashboard after they click the verification link
-          emailRedirectTo: `${window.location.origin}/dashboard`,
+          emailRedirectTo: buildAppUrl("/dashboard"),
         },
       });
 

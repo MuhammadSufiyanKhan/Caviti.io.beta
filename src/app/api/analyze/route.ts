@@ -3,8 +3,7 @@ import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { createClient } from "@/utils/supabase/server";
 import Groq from "groq-sdk";
 import { getJson } from "serpapi";
-import { getResendClient } from "@/lib/resend";
-
+import { getResendClient } from "@/lib/resend";import { buildAppUrl } from '@/lib/urls';
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 function isUrl(input: string): boolean {
@@ -287,7 +286,7 @@ try {
             </div>
           </div>
 
-          <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/dashboard/report/${newReport.id}" 
+          <a href="${buildAppUrl(`/dashboard/report/${newReport.id}`)}" 
             style="display: block; text-align: center; background: linear-gradient(135deg, #3b82f6, #6366f1); color: white; padding: 16px; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 16px; margin-bottom: 24px;">
             View Full Report →
           </a>
