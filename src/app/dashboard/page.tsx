@@ -133,7 +133,7 @@ export default function DashboardPage() {
       <header className="border-b border-[#1F2937] bg-[#0A0A0A]/78 backdrop-blur-xl sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4 sm:gap-6 min-w-0">
-            <div className="flex items-center gap-2 min-w-0">
+            <Link href="/" className="flex items-center gap-2 min-w-0">
               <Image
                 src="/logo.png"
                 alt="Caviti Logo"
@@ -142,14 +142,11 @@ export default function DashboardPage() {
                 className="rounded-full flex-shrink-0"
               />
               <span className="text-white font-bold text-lg sm:text-xl truncate">caviti</span>
-            </div>
-            <span className="hidden sm:inline text-[#333]">/</span>
-            <span className="hidden sm:inline text-xs sm:text-sm text-[#A1A1AA] bg-[#111] border border-[#1F2937] px-3 py-1 rounded-lg truncate">Dashboard</span>
+          </Link>
+          <span className="hidden sm:inline text-[#333]">/</span>
+          <span className="hidden sm:inline text-xs sm:text-sm text-[#A1A1AA] bg-[#111] border border-[#1F2937] px-3 py-1 rounded-lg truncate">Dashboard</span>
           </div>
           <div className="hidden sm:flex items-center gap-6 sm:gap-8 text-sm">
-            <Link href="/dashboard" className="text-[#E5E7EB] font-semibold hover:text-white transition">Overview</Link>
-            <Link href="/dashboard/billing" className="text-[#A1A1AA] hover:text-[#E5E7EB] transition">Billing</Link>
-            <Link href="/" className="text-[#A1A1AA] hover:text-[#E5E7EB] transition">Home</Link>
           </div>
           <div>
             <UserMenu />

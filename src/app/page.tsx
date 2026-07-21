@@ -347,21 +347,23 @@ export default function LandingPage() {
         </motion.div>
       </div>
 
-      {/* Footer */}
-      <footer style={{ position: "relative", zIndex: 10, borderTop: "1px solid rgba(255,255,255,0.06)", padding: "32px 64px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div className="flex items-center gap-2">
-          <Image
-            src="/logo.png"
-            alt="Caviti Logo"
-            width={20}
-            height={20}
-            className="rounded-full"
-          />
-          <span className="text-white font-bold text-xl" style={{ fontSize: 20 }}>
-            caviti
-          </span>
+      {/* Footer (responsive) */}
+      <footer className="relative z-10 border-t border-white/6">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center sm:justify-between gap-3 py-6 px-4 sm:px-16">
+          <div className="flex items-center gap-2">
+            <Image
+              src="/logo.png"
+              alt="Caviti Logo"
+              width={20}
+              height={20}
+              className="rounded-full"
+            />
+            <span className="text-white font-bold text-xl" style={{ fontSize: 20 }}>
+              caviti
+            </span>
+          </div>
+          <p className="text-sm text-[#94a3b8] text-center">© {new Date().getFullYear()} Caviti.io. All rights reserved.</p>
         </div>
-        <p style={{ fontSize: "13px", color: "#94a3b8" }}>© {new Date().getFullYear()} Caviti.io. All rights reserved.</p>
       </footer>
 
       <style>{`
