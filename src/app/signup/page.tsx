@@ -71,7 +71,7 @@ export default function SignupPage() {
       setEmailFrom("Supabase");
       setDeliveryId(null);
       setStep("verify");
-      setCooldownSeconds(45);
+      setCooldownSeconds(60);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "An error occurred. Please try again.");
       console.error(err);
