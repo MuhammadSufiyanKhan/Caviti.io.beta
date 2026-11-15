@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import Groq from "groq-sdk";
+import { GROQ_MODEL } from "@/lib/groq-model";
 import { getJson } from "serpapi";
 import { createClient } from "@/utils/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
@@ -141,7 +142,7 @@ CREDIBILITY: Reference specific review quotes when possible.
 Be empathetic to customer frustrations while being analytical.`;
 
   const completion = await groq.chat.completions.create({
-    model: "llama-3.3-70b-versatile",
+    model: GROQ_MODEL,
     messages: [
       {
         role: "user",
@@ -265,7 +266,7 @@ export async function POST(request: Request) {
 
     // Ask Groq using search results AND real reviews - ONLY for analysis pillars
     const groqResponse = await groq.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
+      model: GROQ_MODEL,
       messages: [
         {
           role: "user",

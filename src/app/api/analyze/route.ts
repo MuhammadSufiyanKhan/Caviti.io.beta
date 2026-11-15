@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { createClient } from "@/utils/supabase/server";
 import Groq from "groq-sdk";
+import { GROQ_MODEL } from "@/lib/groq-model";
 import { getJson } from "serpapi";
 import { getResendClient } from "@/lib/resend";import { buildAppUrl } from '@/lib/urls';
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
@@ -63,7 +64,7 @@ async function getRealData(productName: string): Promise<string> {
 
 async function analyzeWithGroq(input: string, realData: string, isUrlInput: boolean): Promise<string> {
   const completion = await groq.chat.completions.create({
-    model: "llama-3.3-70b-versatile",
+    model: GROQ_MODEL,
     messages: [{
       role: "user",
       content: `You are a market research analyst. Analyze this ${isUrlInput ? "competitor" : "product niche"}: "${input}"
@@ -145,7 +146,7 @@ Guidelines:
 Content:\n${pageContent}`;
 
   const completion = await groq.chat.completions.create({
-    model: "llama-3.3-70b-versatile",
+    model: GROQ_MODEL,
     messages: [
       {
         role: "user",
