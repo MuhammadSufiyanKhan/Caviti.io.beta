@@ -1,4 +1,5 @@
 import Groq from "groq-sdk";
+import { GROQ_MODEL } from "@/lib/groq-model";
 import OpenAI from "openai";
 import type { AnalysisResult } from "@/types/analysis";
 
@@ -68,7 +69,7 @@ async function analyzeWithOpenAI(scrapedText: string, url: string): Promise<Anal
 async function analyzeWithGroq(scrapedText: string, url: string): Promise<AnalysisResult> {
   const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
   const completion = await groq.chat.completions.create({
-    model: "llama-3.3-70b-versatile",
+    model: GROQ_MODEL,
     response_format: { type: "json_object" },
     messages: [
       { role: "system", content: SYSTEM_PROMPT },

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import Groq from 'groq-sdk';
+import { GROQ_MODEL } from '@/lib/groq-model';
 import { scrapeWebsite } from '@/lib/scraper';
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
@@ -11,7 +12,7 @@ function isUrl(input: string): boolean {
 
 async function analyzeProductName(product: string, market: string): Promise<string> {
   const completion = await groq.chat.completions.create({
-    model: "llama-3.3-70b-versatile",
+    model: GROQ_MODEL,
     messages: [{
       role: "user",
       content: `You are a market research analyst. Analyze the product "${product}" in the "${market}" market.
@@ -37,7 +38,7 @@ async function analyzeUrl(url: string, market: string): Promise<{ title: string;
   const scraped = await scrapeWebsite(url);
   
   const completion = await groq.chat.completions.create({
-    model: "llama-3.3-70b-versatile",
+    model: GROQ_MODEL,
     messages: [{
       role: "user",
       content: `You are a market research analyst. Analyze this competitor website content for the "${market}" market.
