@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getJson } from "serpapi";
 import Groq from "groq-sdk";
+import { GROQ_MODEL } from "@/lib/groq-model";
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
@@ -21,85 +22,6 @@ function isLikelyCompleteReviewText(text: string): boolean {
   if (/[;:]/.test(normalized) && !/[.!?]/.test(normalized)) return false;
 
   return true;
-}
-
-function inferProductCategory(productName: string): string {
-  const name = productName.toLowerCase();
-
-  if (/(lipstick|foundation|mascara|blush|concealer|lip balm|lip liner|skincare|serum|cream|moisturizer|sunscreen|perfume|cosmetic|beauty)/.test(name)) {
-    return "beauty";
-  }
-
-  if (/(phone|laptop|tablet|headphone|speaker|keyboard|mouse|charger|camera|monitor|watch|earbuds|router)/.test(name)) {
-    return "tech";
-  }
-
-  if (/(shoe|shirt|jacket|bag|hat|socks|jeans|dress|coat|sneaker|wallet)/.test(name)) {
-    return "fashion";
-  }
-
-  if (/(coffee|tea|soap|detergent|cleaner|toothpaste|shampoo|conditioner|deodorant|food|snack)/.test(name)) {
-    return "consumables";
-  }
-
-  return "general";
-}
-
-function buildFallbackReviews(productName: string): any[] {
-  const safeName = productName?.trim() || "this product";
-  const category = inferProductCategory(safeName);
-  const productLabel = safeName.length > 40 ? `${safeName.slice(0, 37)}...` : safeName;
-
-  const categoryTemplates: Record<string, string[]> = {
-    beauty: [
-      `Total waste of money. The texture is so uneven and it looks streaky no matter how much I blend it. Won't buy again.`,
-      `This wore off after like 3 hours. The packaging says all-day wear but that's BS. Very disappointed.`,
-      `It made my skin so dry and tight. Definitely not as moisturizing as it claims to be. Wouldn't recommend.`,
-      `I can't get it to apply smoothly at all. It just looks patchy and cakey. Not worth the price tag honestly.`,
-      `Looked way better in the photos online. Real life performance is terrible. Really regret spending the money.`,
-      `For the price they're charging? No way. The quality is really poor. There are way better options out there.`,
-    ],
-    tech: [
-      `Don't waste your time with this. It's so unreliable - constantly glitching and freezing. Returned mine.`,
-      `Setup was a nightmare and it doesn't work half the time. Customer support was useless too.`,
-      `Battery dies SO fast. I get maybe 2 hours max. They advertise much longer. Total letdown.`,
-      `Can't keep a connection to save my life. Keeps dropping and disconnecting. Really frustrating.`,
-      `Feels cheap and flimsy. Started having problems within a week. Won't hold up for long.`,
-      `Not worth the money at all. Cheaper brands do a better job. Really disappointed with this one.`,
-    ],
-    fashion: [
-      `The material is super cheap and uncomfortable. Not soft at all like the listing said. Returned it immediately.`,
-      `Doesn't fit right and it's not comfortable to wear. Looks way different in person than online.`,
-      `The quality is nowhere near as good as the photos. Looks cheap and poorly made.`,
-      `It started falling apart after I wore it a few times. Stitching is coming undone already.`,
-      `Super disappointed. Uncomfortable and the quality is just not there. Waste of money honestly.`,
-      `Way overpriced for what you get. I've bought better quality stuff for half the price.`,
-    ],
-    consumables: [
-      `Doesn't work as advertised at all. Very inconsistent results. Threw away the rest of the product.`,
-      `Smells nothing like the description and doesn't work like it's supposed to. Very disappointed.`,
-      `Made a mess and barely worked. Wasted more trying to clean up than actually using it.`,
-      `Seemed to work the first time then nothing. Totally ineffective after that. Don't bother.`,
-      `For the price, the quality is terrible. You'd think it'd be better. Definitely disappointed.`,
-      `All hype, no substance. Looked good in the ads but real results? Nonexistent. Won't buy again.`,
-    ],
-    general: [
-      `Not what I expected. Quality is really poor for the price. Should've read the reviews first.`,
-      `Doesn't do what it's supposed to do. The description is misleading. Very frustrated right now.`,
-      `The quality feels cheap and cheap. Definitely not worth what they're asking for it.`,
-      `This broke after barely using it a few times. Really poor craftsmanship. Regret the purchase.`,
-      `Can't rely on this at all. Keeps failing on me. Wouldn't recommend to anyone.`,
-      `Looks good in the pictures but that's about it. Real life performance is awful. Total disappointment.`,
-    ],
-  };
-
-  return (categoryTemplates[category] || categoryTemplates.general).map((text, index) => ({
-    rating: index % 2 === 0 ? 1 : 2,
-    reviewText: text,
-    reviewer: index % 2 === 0 ? "Verified Customer" : "Verified Buyer",
-    date: index < 2 ? "Recent" : "2 weeks ago",
-    source: "Customer Reviews",
-  }));
 }
 
 async function fetchFirecrawlReviews(url: string, source: string = "generic"): Promise<any[]> {
@@ -221,163 +143,167 @@ async function fetchFirecrawlReviews(url: string, source: string = "generic"): P
   }
 }
 
-async function fetchRealReviewsWithRatings(productName: string): Promise<any[]> {
+async function searchSnippetCandidates(query: string, source: string, reviewer: string): Promise<any[]> {
   try {
-    console.log("[fetch-reviews] Searching for REAL customer reviews of:", productName);
+    const results = await getJson({
+      engine: "google",
+      q: query,
+      api_key: process.env.SERPAPI_KEY,
+      num: 20,
+    });
+    const organic = (results as any)?.organic_results || [];
+    return organic
+      .filter((item: any) => item.snippet && item.snippet.length > 50 && isLikelyCompleteReviewText(item.snippet))
+      .map((item: any) => ({
+        // Snippets have no real star rating (0 = unknown). Sentiment is decided later by the classifier.
+        rating: 0,
+        reviewText: normalizeReviewText(item.snippet),
+        reviewer,
+        date: "Recent",
+        source,
+        url: item.link,
+      }));
+  } catch (err) {
+    console.log(`[fetch-reviews] ${source} search error:`, err);
+    return [];
+  }
+}
 
-    // STRATEGY 1: Search Reddit for product complaints - Real users discussing issues
-    console.log("[fetch-reviews] 1. Searching Reddit for complaints...");
-    try {
-      const redditResults = await getJson({
-        engine: "google",
-        q: `site:reddit.com ${productName} terrible awful bad hate complaint problem issue -worth`,
-        api_key: process.env.SERPAPI_KEY,
-        num: 20,
-      });
-
-      const redditSnippets = (redditResults as any)?.organic_results || [];
-      if (redditSnippets.length >= 3) {
-        const reviews = redditSnippets
-          .filter((item: any) => item.snippet && item.snippet.length > 50 && isLikelyCompleteReviewText(item.snippet))
-          .slice(0, 8)
-          .map((item: any) => ({
-            rating: 1,
-            reviewText: normalizeReviewText(item.snippet),
-            reviewer: "Reddit User",
-            date: "Recent",
-            source: "Reddit",
-          }));
-
-        if (reviews.length >= 6) {
-          console.log("[fetch-reviews] SUCCESS: Found", reviews.length, "real complaints on Reddit");
-          return reviews;
-        }
+// Collect candidate customer feedback from the web. Candidates are NOT assumed to be negative;
+// classifyWithAI / the lexical guard decide that afterwards.
+async function fetchCandidateReviews(productName: string): Promise<any[]> {
+  const pool: any[] = [];
+  const seen = new Set<string>();
+  const add = (items: any[]) => {
+    for (const r of items) {
+      const key = r.reviewText.toLowerCase().slice(0, 80);
+      if (!seen.has(key)) {
+        seen.add(key);
+        pool.push(r);
       }
-    } catch (redditErr) {
-      console.log("[fetch-reviews] Reddit search error:", redditErr);
     }
+  };
 
-    // STRATEGY 2: Search Quora for product issues - Real Q&A about problems
-    console.log("[fetch-reviews] 2. Searching Quora for problems...");
-    try {
-      const quoraResults = await getJson({
-        engine: "google",
-        q: `site:quora.com "${productName}" problems issues complaints not good bad quality`,
-        api_key: process.env.SERPAPI_KEY,
-        num: 20,
-      });
+  const queries: Array<[string, string, string]> = [
+    [`site:reddit.com ${productName} terrible awful bad hate complaint problem issue -worth`, "Reddit", "Reddit User"],
+    [`site:quora.com "${productName}" problems issues complaints not good bad quality`, "Quora", "Quora User"],
+    [`"${productName}" review negative bad quality poor disappointed avoid`, "Search Results", "Customer"],
+    [`${productName} reviews customer feedback rating site:amazon.com OR site:trustpilot.com OR site:walmart.com`, "Shopping Sites", "Buyer"],
+  ];
 
-      const quoraSnippets = (quoraResults as any)?.organic_results || [];
-      if (quoraSnippets.length >= 3) {
-        const reviews = quoraSnippets
-          .filter((item: any) => item.snippet && item.snippet.length > 50 && isLikelyCompleteReviewText(item.snippet))
-          .slice(0, 8)
-          .map((item: any) => ({
-            rating: 1,
-            reviewText: normalizeReviewText(item.snippet),
-            reviewer: "Quora User",
-            date: "Recent",
-            source: "Quora",
-          }));
+  // Sequential with early stop to conserve SerpAPI quota.
+  for (const [query, source, reviewer] of queries) {
+    add(await searchSnippetCandidates(query, source, reviewer));
+    if (pool.length >= 20) break;
+  }
 
-        if (reviews.length >= 6) {
-          console.log("[fetch-reviews] SUCCESS: Found", reviews.length, "real problems on Quora");
-          return reviews;
-        }
-      }
-    } catch (quoraErr) {
-      console.log("[fetch-reviews] Quora search error:", quoraErr);
-    }
-
-    // STRATEGY 3: Direct Google search for negative reviews and complaints
-    console.log("[fetch-reviews] 3. Searching Google for negative reviews...");
-    try {
-      const googleResults = await getJson({
-        engine: "google",
-        q: `"${productName}" review negative bad quality poor disappointed avoid`,
-        api_key: process.env.SERPAPI_KEY,
-        num: 20,
-      });
-
-      const googleSnippets = (googleResults as any)?.organic_results || [];
-      if (googleSnippets.length >= 3) {
-        const reviews = googleSnippets
-          .filter((item: any) => item.snippet && item.snippet.length > 50 && isLikelyCompleteReviewText(item.snippet))
-          .slice(0, 8)
-          .map((item: any) => ({
-            rating: 1,
-            reviewText: normalizeReviewText(item.snippet),
-            reviewer: "Verified Customer",
-            date: "Recent",
-            source: "Search Results",
-          }));
-
-        if (reviews.length >= 6) {
-          console.log("[fetch-reviews] SUCCESS: Found", reviews.length, "real negative reviews");
-          return reviews;
-        }
-      }
-    } catch (googleErr) {
-      console.log("[fetch-reviews] Google search error:", googleErr);
-    }
-
-    // STRATEGY 4: Try shopping reviews specifically
-    console.log("[fetch-reviews] 4. Searching shopping sites for reviews...");
-    try {
-      const shoppingResults = await getJson({
-        engine: "google",
-        q: `${productName} reviews customer feedback rating site:amazon.com OR site:trustpilot.com OR site:walmart.com`,
-        api_key: process.env.SERPAPI_KEY,
-        num: 20,
-      });
-
-      const shoppingSnippets = (shoppingResults as any)?.organic_results || [];
-      if (shoppingSnippets.length >= 3) {
-        const reviews = shoppingSnippets
-          .filter((item: any) => item.snippet && item.snippet.length > 50 && isLikelyCompleteReviewText(item.snippet))
-          .slice(0, 8)
-          .map((item: any) => ({
-            rating: Math.random() > 0.5 ? 1 : 2,
-            reviewText: normalizeReviewText(item.snippet),
-            reviewer: "Verified Buyer",
-            date: "Recent",
-            source: "Shopping Sites",
-          }));
-
-        if (reviews.length >= 6) {
-          console.log("[fetch-reviews] SUCCESS: Found", reviews.length, "real customer reviews");
-          return reviews;
-        }
-      }
-    } catch (shoppingErr) {
-      console.log("[fetch-reviews] Shopping search error:", shoppingErr);
-    }
-
-    // STRATEGY 5: Try Firecrawl one more time with better URLs
-    console.log("[fetch-reviews] 5. Attempting Firecrawl scrape...");
+  if (pool.length < 6) {
     const urls = [
       `https://www.amazon.com/s?k=${encodeURIComponent(productName)}+reviews`,
       `https://www.reddit.com/search/?q=${encodeURIComponent(productName)}+terrible`,
     ];
-
     for (const url of urls) {
-      const scrapedReviews = await fetchFirecrawlReviews(url, "generic");
-      if (scrapedReviews.length >= 6) {
-        console.log("[fetch-reviews] SUCCESS: Firecrawl found", scrapedReviews.length, "reviews");
-        return scrapedReviews;
-      }
+      add(await fetchFirecrawlReviews(url, "generic"));
+      if (pool.length >= 6) break;
+    }
+  }
+
+  console.log(`[fetch-reviews] ${pool.length} candidate snippets collected`);
+  return pool;
+}
+
+const NEGATIVE_WORDS =
+  /\b(bad|terrible|awful|horrible|poor|worst|disappoint\w*|waste|wasted|broke|broken|defective|damaged|faulty|cheap|flimsy|overpriced|useless|regret\w*|refund|return(ed)?|complain\w*|problem\w*|issue\w*|fail\w*|stopped working|falls? apart|fell apart|doesn'?t work|didn'?t work|not worth|uncomfortable|scam|rip-?off|hate[sd]?|annoying|frustrat\w*|never again|avoid)\b/i;
+const POSITIVE_WORDS =
+  /\b(love[sd]?|loving|great|excellent|amazing|awesome|fantastic|perfect|best|recommend\w*|worth (it|every|the)|highly rated|five stars?|5 stars?|happy with|satisfied|impressed|comfortable|good quality|well made|works? (great|well|perfectly))\b/i;
+
+// Conservative guard: true only when the text reads as a complaint and is not praise-only.
+function isLexicallyNegative(text: string): boolean {
+  const t = text || "";
+  if (!NEGATIVE_WORDS.test(t)) return false;
+  const neg = (t.match(new RegExp(NEGATIVE_WORDS.source, "gi")) || []).length;
+  const pos = (t.match(new RegExp(POSITIVE_WORDS.source, "gi")) || []).length;
+  return neg >= pos;
+}
+
+// Positive-only text must never reach the pain points section, even if the AI mislabels it.
+function looksPositiveOnly(text: string): boolean {
+  return POSITIVE_WORDS.test(text || "") && !NEGATIVE_WORDS.test(text || "");
+}
+
+// Ask the AI to keep ONLY genuine negative customer feedback about this product and categorize it.
+// Returns null if the AI call fails so the caller can fall back to the lexical filter.
+async function classifyWithAI(
+  reviews: any[],
+  productName: string
+): Promise<{ negatives: any[]; clusters: any[] } | null> {
+  if (reviews.length === 0) return { negatives: [], clusters: [] };
+  if (!process.env.GROQ_API_KEY) return null;
+
+  const batch = reviews.slice(0, 40);
+  const numbered = batch.map((r, i) => `[${i}] ${r.reviewText.slice(0, 500)}`).join("\n");
+
+  try {
+    const completion = await groq.chat.completions.create({
+      model: GROQ_MODEL,
+      temperature: 0,
+      response_format: { type: "json_object" },
+      messages: [
+        {
+          role: "system",
+          content:
+            "You filter and categorize customer feedback. Be strict: only genuine negative feedback about the named product may pass. Respond with JSON only.",
+        },
+        {
+          role: "user",
+          content: `Product: "${productName}"
+
+For each numbered text decide if it is a NEGATIVE customer complaint about THIS product (the author expresses a problem, defect, disappointment, regret or dissatisfaction with the product itself).
+
+Mark negative=false for: positive reviews, praise, mixed reviews whose overall sentiment is positive, neutral descriptions, marketing copy, news or listicles, questions, advice, and text about other products.
+
+For negative=true items give "theme": a short 2-4 word complaint category (e.g. "Battery Life", "Build Quality", "Price & Value", "Customer Support", "Sizing & Fit"). Reuse the exact same theme name for the same kind of issue and use at most 6 themes overall.
+
+Return: {"items":[{"id":0,"negative":true,"theme":"Battery Life"}]}
+
+Texts:
+${numbered}`,
+        },
+      ],
+    });
+
+    const raw = completion.choices[0]?.message?.content || "";
+    const jsonText = raw.slice(raw.indexOf("{"), raw.lastIndexOf("}") + 1);
+    const parsed = JSON.parse(jsonText);
+    if (!Array.isArray(parsed?.items)) return null;
+
+    const byTheme = new Map<string, any[]>();
+    const negatives: any[] = [];
+    for (const item of parsed.items) {
+      const review = batch[Number(item?.id)];
+      if (!review || item?.negative !== true) continue;
+      if (looksPositiveOnly(review.reviewText)) continue; // safety net against mislabels
+      const theme = String(item?.theme || "Other Complaints").trim().slice(0, 40) || "Other Complaints";
+      negatives.push(review);
+      if (!byTheme.has(theme)) byTheme.set(theme, []);
+      byTheme.get(theme)!.push(review);
     }
 
-    // ALL REAL SOURCES FAILED - Use verified customer complaint database as fallback
-    console.log("[fetch-reviews] All real sources exhausted. Using verified customer feedback database.");
-    console.log("[fetch-reviews] NOTE: This is verified real feedback, shown as fallback when live scraping unavailable");
-    
-    const fallbackReviews = buildFallbackReviews(productName);
-    return fallbackReviews;
+    const clusters = Array.from(byTheme.entries())
+      .sort((a, b) => b[1].length - a[1].length)
+      .map(([theme, items]) => ({
+        theme: theme.toUpperCase(),
+        description: `Customers complain about ${theme.toLowerCase()}.`,
+        emoji: "🔴",
+        mentions: items.length,
+        // Quotes are the original text, never AI-written.
+        quotes: items.slice(0, 5).map((r) => r.reviewText),
+      }));
+
+    return { negatives, clusters };
   } catch (err) {
-    console.log("[fetch-reviews] Unexpected error:", err);
-    const fallbackReviews = buildFallbackReviews(productName);
-    return fallbackReviews;
+    console.log("[classify] AI classification failed, using lexical fallback:", err);
+    return null;
   }
 }
 
@@ -524,18 +450,28 @@ export async function POST(request: Request) {
       );
     }
 
-    const reviews = await fetchRealReviewsWithRatings(productName);
-    console.log(`[fetch] Fetched ${reviews.length} reviews, calling clustering...`);
-    
-    // Cluster reviews by theme and extract verbatim quotes
-    const clusters = await clusterReviewsByTheme(reviews);
-    console.log(`[fetch] Clustering returned ${clusters.length} themes`);
-    
-    return NextResponse.json({ 
-      success: true, 
+    const fetched = await fetchCandidateReviews(productName);
+    // Drop anything with a real positive star rating up front.
+    const candidates = fetched.filter((r: any) => !(r.rating >= 3));
+    console.log(`[fetch] ${candidates.length} candidates, classifying sentiment...`);
+
+    let negatives: any[];
+    let clusters: any[];
+    const ai = await classifyWithAI(candidates, productName);
+    if (ai) {
+      negatives = ai.negatives;
+      clusters = ai.clusters;
+    } else {
+      negatives = candidates.filter((r: any) => isLexicallyNegative(r.reviewText));
+      clusters = await clusterReviewsByTheme(negatives);
+    }
+    console.log(`[fetch] ${negatives.length} negative reviews, ${clusters.length} themes`);
+
+    return NextResponse.json({
+      success: true,
       complaint_themes: clusters,
-      total_reviews: reviews.length,
-      negative_reviews: reviews.filter((r: any) => (r.rating || 0) <= 2).length
+      total_reviews: fetched.length,
+      negative_reviews: negatives.length,
     });
   } catch (err: any) {
     console.log(`[fetch] Error in POST:`, err);

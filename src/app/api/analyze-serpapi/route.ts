@@ -93,7 +93,7 @@ async function fetchRealReviewsWithRatings(productName: string): Promise<any[]> 
 
       const organic = (googleReviews as any)?.organic_results || [];
       return organic.slice(0, 8).map((item: any, idx: number) => ({
-        rating: Math.floor(Math.random() * 3) + 1,
+        rating: 0, // unknown: snippet has no real star rating
         reviewText: item.snippet || "",
         reviewer: `Customer ${idx + 1}`,
         date: "Recent",
@@ -293,6 +293,8 @@ Extract and provide in EXACTLY this format:
 - Features customers are begging for
 - Use bullet points starting with "- "
 
+STRICT RULE FOR "NEGATIVE POINTS": list ONLY genuine complaints, defects and dissatisfaction. Never include praise, positive reviews, neutral facts or marketing claims, and never turn a positive review into a complaint. If a point is not clearly negative, leave it out. If there are no real complaints, write a single bullet saying so.
+
 TONE: Write as if you're having a real conversation. Use natural language. Avoid corporate jargon.
 CREDIBILITY: Reference specific review quotes when possible.
 Be empathetic to customer frustrations while being analytical.
@@ -300,7 +302,7 @@ Be empathetic to customer frustrations while being analytical.
 PRODUCT: ${productName}
 
 REAL CUSTOMER REVIEWS (use these for context only - do NOT paraphrase them):
-${realReviews.map((r) => `[${r.rating}★] "${r.reviewText}"`).join("\n")}
+${realReviews.filter((r) => !(r.rating >= 4)).map((r) => (r.rating ? `[${r.rating}★] ` : "") + `"${r.reviewText}"`).join("\n")}
 
 SEARCH RESULTS:
 ${joinedSnippets}`,
@@ -334,8 +336,11 @@ ${joinedSnippets}`,
             url: isAmazonUrl(url.trim()) ? url.trim() : "",
             analysis: analysisText,
             real_reviews: realReviews,
-            average_rating: realReviews.length > 0 
-              ? (realReviews.reduce((sum: number, r: any) => sum + (r.rating || 0), 0) / realReviews.length).toFixed(1)
+            average_rating: realReviews.some((r: any) => r.rating > 0)
+              ? (() => {
+                  const rated = realReviews.filter((r: any) => r.rating > 0);
+                  return (rated.reduce((sum: number, r: any) => sum + r.rating, 0) / rated.length).toFixed(1);
+                })()
               : "N/A",
             reviews_count: realReviews.length,
             data_points: analysisText.length,
