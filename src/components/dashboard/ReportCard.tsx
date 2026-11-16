@@ -58,10 +58,10 @@ export function ReportCard({ report, view, maxCount, selected, pinned, onSelect,
       transition={{ type: "spring", stiffness: 380, damping: 36 }}
       className={
         grid
-          ? `flex flex-col rounded-3xl border p-5 transition-colors ${
+          ? `flex min-w-0 flex-col rounded-3xl border p-5 transition-colors ${
               selected ? "border-accent bg-accent-muted/50" : "border-border bg-surface hover:border-foreground/30"
             }`
-          : `border-t border-border py-5 transition-colors sm:px-3 ${selected ? "bg-accent-muted/50" : "hover:bg-accent-muted/25"}`
+          : `min-w-0 border-t border-border py-5 transition-colors sm:px-3 ${selected ? "bg-accent-muted/50" : "hover:bg-accent-muted/25"}`
       }
     >
       <div className="flex items-start gap-3">

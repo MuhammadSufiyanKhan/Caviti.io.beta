@@ -14,7 +14,7 @@ export function Logo({ href = "/" }: { href?: string }) {
   return (
     <Link href={href} className="flex items-center gap-2 rounded-md" aria-label="Caviti home">
       <LogoMark />
-      <span className="display text-2xl">caviti</span>
+      <span className="display text-2xl max-[359px]:hidden">caviti</span>
     </Link>
   );
 }

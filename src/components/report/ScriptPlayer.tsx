@@ -44,7 +44,7 @@ export function ScriptPlayer({ script }: { script: AdScript }) {
         />
       </div>
 
-      <div className="relative mt-5 flex aspect-[2/1] min-h-[200px] flex-col justify-between overflow-hidden rounded-2xl border border-border bg-background p-5 sm:p-8">
+      <div className="relative mt-5 flex min-h-[230px] sm:aspect-[2/1] sm:min-h-[200px] flex-col justify-between overflow-hidden rounded-2xl border border-border bg-background p-5 sm:p-8">
         <span aria-hidden className="display pointer-events-none absolute -bottom-6 right-4 select-none text-[9rem] leading-none text-foreground/[0.06] sm:text-[12rem]">
           {current.sceneNumber}
         </span>

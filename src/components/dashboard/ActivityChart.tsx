@@ -90,7 +90,9 @@ export function ActivityChart({ dates, active, onSelect }: ActivityChartProps) {
           // On narrow screens only every other label shows, so none are cut off.
           <span
             key={w.start}
-            className={`flex-1 whitespace-nowrap text-center sm:truncate ${i % 2 === 1 ? "max-sm:invisible" : ""}`}
+            className={`min-w-0 flex-1 whitespace-nowrap text-center sm:truncate ${
+              i % 2 === 1 ? "max-sm:invisible max-sm:overflow-hidden" : "max-sm:overflow-visible"
+            }`}
           >
             {label(w.start)}
           </span>

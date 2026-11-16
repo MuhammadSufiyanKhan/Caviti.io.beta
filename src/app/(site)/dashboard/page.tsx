@@ -523,7 +523,7 @@ export default function DashboardPage() {
               ) : (
                 <ul
                   className={
-                    view === "grid" ? "mt-4 grid gap-4 md:grid-cols-2" : "mt-4 border-b border-border"
+                    view === "grid" ? "mt-4 grid grid-cols-1 gap-4 md:grid-cols-2" : "mt-4 border-b border-border"
                   }
                 >
                   <AnimatePresence>

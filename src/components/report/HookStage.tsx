@@ -148,7 +148,7 @@ function LengthMeter({ words }: { words: number }) {
   const pct = Math.min(100, (seconds / (TARGET_SECONDS * 2)) * 100);
   return (
     <div>
-      <div className="flex items-baseline justify-between gap-4 text-sm">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 text-sm">
         <span className="font-semibold">Reading time</span>
         <span className={`tabular-nums ${fits ? "text-accent-ink" : "text-cavity"}`}>
           about {readSeconds(words)} {readSeconds(words) === 1 ? "second" : "seconds"}, {words} words
