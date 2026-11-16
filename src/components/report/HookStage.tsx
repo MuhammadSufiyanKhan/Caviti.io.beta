@@ -3,7 +3,17 @@
 import { useState } from "react";
 import { RotateCw } from "lucide-react";
 import { CopyButton } from "@/components/report/CopyButton";
+import { scrollToId } from "@/lib/smooth-scroll";
 import type { Hook } from "@/lib/report-data";
+
+/** Text size that fits the hook inside the phone, from short punchy lines to long generated ones. */
+function captionSize(wordCount: number) {
+  if (wordCount <= 8) return "1.7rem";
+  if (wordCount <= 16) return "1.4rem";
+  if (wordCount <= 28) return "1.15rem";
+  if (wordCount <= 45) return "0.98rem";
+  return "0.85rem";
+}
 
 /** Hooks played on a phone-shaped stage with the three-second clock running, with a picker beside it. */
 export function HookStage({ hooks }: { hooks: Hook[] }) {
@@ -12,15 +22,19 @@ export function HookStage({ hooks }: { hooks: Hook[] }) {
   if (hooks.length === 0) return null;
   const hook = hooks[Math.min(index, hooks.length - 1)];
   const words = hook.hook.split(/\s+/).filter(Boolean);
+  // Long hooks speed up so the whole line still lands inside three seconds.
+  const step = Math.min(0.16, 2.2 / Math.max(1, words.length));
 
   const choose = (i: number) => {
     setIndex(i);
     setPlay((p) => p + 1);
+    // On wide screens the phone follows you down the list. On a phone it can't, so bring it into view.
+    if (window.matchMedia("(max-width: 767px)").matches) scrollToId("hook-phone", -90);
   };
 
   return (
     <div className="grid items-start gap-8 md:grid-cols-[270px_minmax(0,1fr)] md:gap-12">
-      <div>
+      <div id="hook-phone" className="md:sticky md:top-28 md:self-start">
         <div
           role="img"
           aria-label={`Preview of the hook: ${hook.hook}`}
@@ -33,28 +47,33 @@ export function HookStage({ hooks }: { hooks: Hook[] }) {
               style={{ animation: "seg-fill 3s linear forwards" }}
             />
           </span>
-          <div className="absolute inset-x-5 top-9 text-xs leading-snug text-on-accent/70">
-            {hook.visualDirection ? (
-              <>
-                <span className="font-semibold text-on-accent">On screen: </span>
-                {hook.visualDirection}
-              </>
-            ) : (
-              "First three seconds"
-            )}
+          <div className="absolute inset-0 flex flex-col px-5 pb-4 pt-9">
+            <p className="line-clamp-3 shrink-0 text-xs leading-snug text-on-accent/70">
+              {hook.visualDirection ? (
+                <>
+                  <span className="font-semibold text-on-accent">On screen: </span>
+                  {hook.visualDirection}
+                </>
+              ) : (
+                "First three seconds"
+              )}
+            </p>
+            <div data-lenis-prevent className="mt-auto min-h-0 overflow-y-auto pt-3">
+              <p
+                key={`words-${index}-${play}`}
+                className="display leading-[1.06]"
+                style={{ fontSize: captionSize(words.length), "--step": `${step}s` } as React.CSSProperties}
+              >
+                {words.map((word, i) => (
+                  <span key={i} className="hook-word" style={{ "--i": i } as React.CSSProperties}>
+                    {word}
+                    {"\u00a0"}
+                  </span>
+                ))}
+              </p>
+            </div>
+            <span className="mt-3 shrink-0 text-xs tabular-nums text-on-accent/70">0:00 to 0:03</span>
           </div>
-          <p
-            key={`words-${index}-${play}`}
-            className="display absolute inset-x-5 bottom-14 text-[1.7rem] leading-[1.05]"
-          >
-            {words.map((word, i) => (
-              <span key={i} className="hook-word" style={{ "--i": i } as React.CSSProperties}>
-                {word}
-                {" "}
-              </span>
-            ))}
-          </p>
-          <span className="absolute bottom-5 left-5 text-xs tabular-nums text-on-accent/70">0:00 to 0:03</span>
         </div>
         <button
           type="button"
@@ -82,7 +101,11 @@ export function HookStage({ hooks }: { hooks: Hook[] }) {
                   {h.hookType && (
                     <span className={`text-xs font-medium ${on ? "text-accent-ink" : "text-muted"}`}>{h.hookType}</span>
                   )}
-                  <span className="display mt-0.5 block text-[1.35rem] leading-[1.12] sm:text-2xl">“{h.hook}”</span>
+                  <span
+                    className={`display mt-0.5 block text-[1.2rem] leading-[1.14] sm:text-[1.35rem] ${on ? "" : "line-clamp-3"}`}
+                  >
+                    “{h.hook}”
+                  </span>
                 </button>
               </li>
             );

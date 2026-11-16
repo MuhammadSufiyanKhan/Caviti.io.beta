@@ -217,7 +217,7 @@ html[data-theme="dark"] body:has(.site) {
   display: inline-block;
   opacity: 0;
   animation: hook-word 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-  animation-delay: calc(var(--i) * 0.16s + 0.25s);
+  animation-delay: calc(var(--i) * var(--step, 0.16s) + 0.25s);
 }
 @media (prefers-reduced-motion: reduce) {
   .hook-word { animation: none; opacity: 1; }
