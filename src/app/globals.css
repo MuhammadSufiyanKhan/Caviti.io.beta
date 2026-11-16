@@ -11,37 +11,37 @@
   --accent-muted: rgba(139, 92, 246, 0.12);
 }
 
-/* Public site + user dashboard. Light = clinical chart. */
+/* Public site + user dashboard. Light = lavender-white. */
 .site {
-  --background: #edf1ef;
-  --foreground: #071418;
-  --muted: #475b60;
-  --border: #c9d5d2;
+  --background: #f4f3fa;
+  --foreground: #12102b;
+  --muted: #55537a;
+  --border: #d9d6ec;
   --surface: #ffffff;
-  --accent: #007a6e;
-  --accent-ink: #00584f;
-  --accent-muted: #d3ebe6;
+  --accent: #4b3bff;
+  --accent-ink: #3526d6;
+  --accent-muted: #e4e1ff;
   --on-accent: #ffffff;
-  --cavity: #dd3519;
-  --cavity-muted: #fbdcd5;
+  --cavity: #e0226f;
+  --cavity-muted: #ffd9e8;
   --glow: transparent;
   --loop: 9s;
 }
 
-/* Dark = radiograph. */
+/* Dark = deep indigo. */
 html[data-theme="dark"] .site {
-  --background: #060b10;
-  --foreground: #e8f1f2;
-  --muted: #8ba0a7;
-  --border: #1a2832;
-  --surface: #0c141b;
-  --accent: #4fe3d2;
-  --accent-ink: #7cefe1;
-  --accent-muted: #0e2a2c;
-  --on-accent: #032421;
-  --cavity: #ff6a4d;
-  --cavity-muted: #3b1912;
-  --glow: rgba(79, 227, 210, 0.13);
+  --background: #0b0a1a;
+  --foreground: #eeedfb;
+  --muted: #9a97c0;
+  --border: #25234a;
+  --surface: #131230;
+  --accent: #8b7dff;
+  --accent-ink: #b4abff;
+  --accent-muted: #1e1b4d;
+  --on-accent: #0b0a1a;
+  --cavity: #ff5c9a;
+  --cavity-muted: #3d1230;
+  --glow: rgba(139, 125, 255, 0.18);
 }
 
 @theme inline {
@@ -74,10 +74,10 @@ body {
 }
 
 body:has(.site) {
-  background: #edf1ef;
+  background: #f4f3fa;
 }
 html[data-theme="dark"] body:has(.site) {
-  background: #060b10;
+  background: #0b0a1a;
 }
 
 .site ::selection {
