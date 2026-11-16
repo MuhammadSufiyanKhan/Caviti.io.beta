@@ -193,3 +193,33 @@ html[data-theme="dark"] body:has(.site) {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* Cursor spotlight on gap cards */
+.spot { position: relative; overflow: hidden; }
+.spot::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+  background: radial-gradient(380px circle at var(--x, 50%) var(--y, 0%), var(--accent-muted), transparent 65%);
+}
+.spot:hover::before { opacity: 1; }
+.spot > * { position: relative; }
+
+/* Hook words land one after another, like a caption */
+@keyframes hook-word {
+  from { opacity: 0; transform: translateY(0.6em); }
+  to { opacity: 1; transform: none; }
+}
+.hook-word {
+  display: inline-block;
+  opacity: 0;
+  animation: hook-word 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  animation-delay: calc(var(--i) * 0.16s + 0.25s);
+}
+@media (prefers-reduced-motion: reduce) {
+  .hook-word { animation: none; opacity: 1; }
+  .spot::before { transition: none; }
+}

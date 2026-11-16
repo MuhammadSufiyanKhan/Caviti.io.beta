@@ -7,7 +7,9 @@ import { reportToMarkdown } from "@/lib/report-markdown";
 import { scrollToId } from "@/lib/smooth-scroll";
 import type { GuestReport } from "@/lib/report-data";
 import { Reveal } from "@/components/site/Reveal";
-import { AngleDeck } from "@/components/report/AngleDeck";
+import { AngleCards } from "@/components/report/AngleCards";
+import { GapBoard } from "@/components/report/GapBoard";
+import { HookStage } from "@/components/report/HookStage";
 import { ComplaintExplorer, type ComplaintItem } from "@/components/report/ComplaintExplorer";
 import { CopyButton } from "@/components/report/CopyButton";
 import { Inline } from "@/components/report/Inline";
@@ -175,10 +177,10 @@ export function ReportView({ report, themesLoading, adsLoading, actions, dateLab
           <Section
             id="gaps"
             title="Gaps nobody is filling"
-            intro="What customers want that the current options don't give them. Add the ones worth acting on to your plan."
+            intro="What customers want that the current options don't give them. Fill the gaps worth going after and they join your plan."
           >
             {gaps.length > 0 ? (
-              <PickList items={gaps} kind="gap" isPicked={isPicked} onToggle={toggle} />
+              <GapBoard items={gaps} isPicked={isPicked} onToggle={toggle} />
             ) : (
               <p className="text-muted">No gaps were found.</p>
             )}
@@ -194,30 +196,14 @@ export function ReportView({ report, themesLoading, adsLoading, actions, dateLab
 
           {(hasAds || adsLoading) && (
             <>
-              <Section id="angles" title="Ad angles" intro="Marketing positions that go straight at the complaints above.">
+              <Section id="angles" title="Ad angles" intro="Marketing positions that go straight at the complaints above. Tap a card to see the thinking behind it.">
                 {adsLoading && !hasAds && <Pending label="Writing ad angles, hooks and scripts…" />}
-                <AngleDeck angles={angles} />
+                <AngleCards angles={angles} />
               </Section>
 
               {hooks.length > 0 && (
-                <Section id="hooks" title="Hooks" intro="Opening lines for the first one to three seconds of an ad.">
-                  <ul className="border-b border-border">
-                    {hooks.map((hook, i) => (
-                      <li key={i} className="flex items-start justify-between gap-4 border-t border-border py-5">
-                        <div className="min-w-0">
-                          {hook.hookType && <p className="text-sm font-medium text-accent-ink">{hook.hookType}</p>}
-                          <p className="display mt-1 max-w-3xl text-2xl leading-tight sm:text-3xl">“{hook.hook}”</p>
-                          {hook.visualDirection && (
-                            <p className="mt-2 max-w-3xl text-sm text-muted">
-                              <span className="font-semibold text-foreground">Visual: </span>
-                              {hook.visualDirection}
-                            </p>
-                          )}
-                        </div>
-                        <CopyButton label="Copy" getText={() => hook.hook} className="shrink-0" />
-                      </li>
-                    ))}
-                  </ul>
+                <Section id="hooks" title="Hooks" intro="Opening lines for the first three seconds of an ad. Pick one to watch it play.">
+                  <HookStage hooks={hooks} />
                 </Section>
               )}
 
