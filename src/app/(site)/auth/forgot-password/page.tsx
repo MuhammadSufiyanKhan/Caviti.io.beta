@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
+import { AuthShell } from "@/components/auth/AuthShell";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -31,10 +32,7 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <main className="mx-auto flex max-w-md flex-col px-4 py-14 sm:py-20">
-      <h1 className="font-display text-4xl font-semibold tracking-tight">Reset your password</h1>
-      <p className="mb-8 mt-2 text-muted">Enter your email and we&apos;ll send you a reset link.</p>
-      <div className="rounded-2xl border border-border bg-surface p-6 sm:p-8">
+    <AuthShell title="Reset your password" subtitle="Enter your email and we'll send you a reset link.">
         {sent ? (
           <p role="status" className="leading-relaxed">
             If an account exists for <strong>{email}</strong>, a reset link is on its way. Check your inbox.
@@ -60,7 +58,7 @@ export default function ForgotPasswordPage() {
             <button
               type="submit"
               disabled={loading}
-              className="flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-accent text-sm font-medium text-white hover:bg-accent-ink disabled:opacity-60"
+              className="flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-accent text-sm font-medium text-on-accent hover:brightness-110 disabled:opacity-60"
             >
               {loading && <Loader2 className="h-4 w-4 animate-spin" />}
               Send reset link
@@ -70,7 +68,6 @@ export default function ForgotPasswordPage() {
         <p className="mt-5 text-center text-sm text-muted">
           <Link href="/login" className="font-medium text-accent-ink hover:underline">Back to sign in</Link>
         </p>
-      </div>
-    </main>
+    </AuthShell>
   );
 }

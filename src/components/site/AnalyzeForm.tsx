@@ -30,7 +30,7 @@ export function AnalyzeForm({ initialValue = "", size = "lg", buttonLabel = "Ana
   return (
     <form
       onSubmit={submit}
-      className={`flex w-full flex-col gap-2 rounded-2xl border border-border bg-surface p-2 shadow-sm focus-within:border-accent sm:flex-row ${
+      className={`flex w-full flex-col gap-2 rounded-3xl border border-border bg-surface/90 p-2 backdrop-blur focus-within:border-accent sm:flex-row sm:rounded-full ${
         big ? "" : "max-w-2xl"
       }`}
     >
@@ -43,15 +43,15 @@ export function AnalyzeForm({ initialValue = "", size = "lg", buttonLabel = "Ana
         onChange={(e) => setValue(e.target.value)}
         maxLength={300}
         placeholder="Product name or link"
-        className={`min-w-0 flex-1 rounded-xl bg-transparent px-4 text-foreground placeholder:text-muted/70 focus:outline-none ${
+        className={`min-w-0 flex-1 rounded-full bg-transparent px-5 text-foreground placeholder:text-muted/70 focus:outline-none ${
           big ? "h-14 text-base sm:text-lg" : "h-11 text-base"
         }`}
         style={{ outline: "none" }}
       />
       <button
         type="submit"
-        className={`inline-flex items-center justify-center gap-2 rounded-xl bg-accent font-medium text-white hover:bg-accent-ink ${
-          big ? "h-14 px-7 text-base" : "h-11 px-5 text-sm"
+        className={`inline-flex items-center justify-center gap-2 rounded-full bg-accent font-medium text-on-accent hover:brightness-110 ${
+          big ? "h-14 px-8 text-base" : "h-11 px-5 text-sm"
         }`}
       >
         {buttonLabel}

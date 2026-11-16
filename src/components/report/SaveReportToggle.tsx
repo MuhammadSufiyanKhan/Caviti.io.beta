@@ -73,14 +73,14 @@ export function SaveReportToggle({ report, disabled, savedId, onSavedIdChange }:
           aria-label="Save this report to my dashboard"
           disabled={disabled || busy}
           onClick={toggle}
-          className="flex items-center gap-3 rounded-full border border-border bg-surface py-1.5 pl-1.5 pr-4 text-sm font-medium hover:border-foreground/30 disabled:opacity-60"
+          className="flex items-center gap-3 rounded-full border border-border bg-surface/90 py-1.5 pl-1.5 pr-4 text-sm font-medium hover:border-foreground/30 disabled:opacity-60"
         >
           <span
             className={`relative h-6 w-11 rounded-full transition-colors ${isOn ? "bg-accent" : "bg-border"}`}
             aria-hidden
           >
             <span
-              className={`absolute top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-white shadow transition-all ${
+              className={`absolute top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-background shadow transition-all ${
                 isOn ? "left-[22px]" : "left-0.5"
               }`}
             >

@@ -15,7 +15,11 @@ const geistMono = Geist_Mono({
 const display = Bricolage_Grotesque({
   variable: "--font-display",
   subsets: ["latin"],
+  axes: ["wdth", "opsz"],
 });
+
+// Runs before first paint so the saved (or system) theme never flashes the wrong colors.
+const themeScript = `try{var t=localStorage.getItem('caviti-theme');if(t!=='light'&&t!=='dark'){t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}document.documentElement.dataset.theme=t}catch(e){document.documentElement.dataset.theme='light'}`;
 
 export const metadata: Metadata = {
   title: "Caviti — Find the gaps in any product",
@@ -36,8 +40,12 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} ${display.variable} h-full antialiased`}
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body className="min-h-full flex flex-col bg-background font-sans text-foreground antialiased">
         {children}
       </body>

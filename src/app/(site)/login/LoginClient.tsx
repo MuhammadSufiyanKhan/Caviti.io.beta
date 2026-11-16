@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { AuthForm } from "@/components/auth/AuthForm";
+import { AuthShell } from "@/components/auth/AuthShell";
 
 export function LoginClient() {
   const router = useRouter();
@@ -9,10 +10,7 @@ export function LoginClient() {
   const safeNext = next && next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard";
 
   return (
-    <main className="mx-auto flex max-w-md flex-col px-4 py-14 sm:py-20">
-      <h1 className="font-display text-4xl font-semibold tracking-tight">Sign in</h1>
-      <p className="mb-8 mt-2 text-muted">Pick up where you left off and find your saved reports.</p>
-      <div className="rounded-2xl border border-border bg-surface p-6 sm:p-8">
+    <AuthShell title="Sign in" subtitle="Pick up where you left off and find your saved reports.">
         <AuthForm
           mode="login"
           onSuccess={() => {
@@ -20,7 +18,6 @@ export function LoginClient() {
             router.refresh();
           }}
         />
-      </div>
-    </main>
+    </AuthShell>
   );
 }

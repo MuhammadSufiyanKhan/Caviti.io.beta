@@ -92,8 +92,8 @@ export default function DashboardPage() {
   };
 
   return (
-    <main className="mx-auto max-w-4xl px-4 py-10 sm:px-6 sm:py-14">
-      <h1 className="font-display text-4xl font-semibold tracking-tight sm:text-5xl">
+    <main className="mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-14">
+      <h1 className="display text-[clamp(3rem,8vw,6.5rem)]">
         Your reports
       </h1>
       <p className="mt-3 text-muted">
@@ -127,8 +127,8 @@ export default function DashboardPage() {
             <Loader2 className="h-4 w-4 animate-spin" /> Loading your reports…
           </p>
         ) : reports.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-border p-10 text-center">
-            <h2 className="font-display text-2xl font-semibold">
+          <div className="rounded-3xl border border-dashed border-border p-10 text-center">
+            <h2 className="display text-3xl">
               No saved reports yet
             </h2>
             <p className="mx-auto mt-2 max-w-md text-muted">
@@ -137,7 +137,7 @@ export default function DashboardPage() {
             </p>
             <Link
               href="/analyze"
-              className="mt-6 inline-flex h-11 items-center rounded-lg bg-accent px-5 text-sm font-medium text-white hover:bg-accent-ink"
+              className="mt-6 inline-flex h-12 items-center rounded-full bg-accent px-6 text-sm font-medium text-on-accent hover:brightness-110"
             >
               Analyze your first product
             </Link>
@@ -185,7 +185,7 @@ export default function DashboardPage() {
                     href={`/dashboard/report/${report.id}`}
                     className="group min-w-0 flex-1"
                   >
-                    <span className="block truncate font-display text-xl font-semibold capitalize group-hover:text-accent-ink">
+                    <span className="block truncate display text-3xl capitalize leading-tight group-hover:text-accent-ink sm:text-4xl">
                       {report.product_name}
                     </span>
                     <span className="mt-1 block text-sm text-muted">

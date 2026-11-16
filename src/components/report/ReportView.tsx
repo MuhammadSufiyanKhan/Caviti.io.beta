@@ -20,9 +20,9 @@ function Inline({ text }: { text: string }) {
 
 function Section({ title, intro, children }: { title: string; intro?: string; children: ReactNode }) {
   return (
-    <section className="mt-14">
-      <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">{title}</h2>
-      {intro && <p className="mt-2 max-w-2xl text-muted">{intro}</p>}
+    <section className="mt-20">
+      <h2 className="display text-[clamp(2.2rem,5vw,4rem)]">{title}</h2>
+      {intro && <p className="mt-3 max-w-2xl text-lg text-muted">{intro}</p>}
       <div className="mt-6">{children}</div>
     </section>
   );
@@ -37,7 +37,7 @@ function Findings({ items, tone }: { items: string[]; tone: "cavity" | "accent" 
             aria-hidden
             className={`mt-2.5 h-2 w-2 shrink-0 rounded-full ${tone === "cavity" ? "bg-cavity" : "bg-accent"}`}
           />
-          <p className="max-w-3xl leading-relaxed">
+          <p className="max-w-3xl text-lg leading-relaxed">
             <span className={tone === "cavity" ? "mark-cavity" : ""}>
               <Inline text={item} />
             </span>
@@ -85,7 +85,7 @@ export function ReportView({ report, themesLoading, adsLoading, actions, dateLab
   return (
     <article>
       <header>
-        <h1 className="font-display text-4xl font-semibold capitalize leading-[1.05] tracking-tight sm:text-5xl">
+        <h1 className="display text-[clamp(3rem,9vw,7.5rem)] capitalize">
           {name}
         </h1>
         <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted">
@@ -106,7 +106,7 @@ export function ReportView({ report, themesLoading, adsLoading, actions, dateLab
         <dl className="mt-8 grid grid-cols-2 gap-x-6 gap-y-5 border-y border-border py-5 sm:grid-cols-4">
           {stats.map((s) => (
             <div key={s.label}>
-              <dd className="font-display text-3xl font-semibold tabular-nums">{s.value}</dd>
+              <dd className="display text-5xl tabular-nums sm:text-6xl">{s.value}</dd>
               <dt className="mt-0.5 text-sm text-muted">{s.label}</dt>
             </div>
           ))}
@@ -173,7 +173,7 @@ export function ReportView({ report, themesLoading, adsLoading, actions, dateLab
             <div className="grid gap-x-10 gap-y-8 md:grid-cols-2">
               {(data.ad_angles ?? []).map((angle, i) => (
                 <div key={i} className="border-t-2 border-foreground pt-4">
-                  <h3 className="font-display text-lg font-semibold">{angle.name}</h3>
+                  <h3 className="display text-2xl leading-tight">{angle.name}</h3>
                   <dl className="mt-3 space-y-2.5 text-sm leading-relaxed">
                     <div><dt className="inline font-semibold">Pain: </dt><dd className="inline text-muted">{angle.customerPain}</dd></div>
                     <div><dt className="inline font-semibold">Hidden frustration: </dt><dd className="inline text-muted">{angle.hiddenFrustration}</dd></div>
@@ -191,7 +191,7 @@ export function ReportView({ report, themesLoading, adsLoading, actions, dateLab
                 {data.hooks!.map((hook, i) => (
                   <li key={i} className="border-t border-border py-5">
                     {hook.hookType && <p className="text-sm font-medium text-accent-ink">{hook.hookType}</p>}
-                    <p className="mt-1 max-w-3xl font-display text-xl font-medium leading-snug">“{hook.hook}”</p>
+                    <p className="mt-1 max-w-3xl display text-2xl leading-tight sm:text-3xl">“{hook.hook}”</p>
                     {hook.visualDirection && (
                       <p className="mt-2 max-w-3xl text-sm text-muted">
                         <span className="font-semibold text-foreground">Visual: </span>{hook.visualDirection}

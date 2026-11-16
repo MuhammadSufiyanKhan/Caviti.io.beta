@@ -1,21 +1,29 @@
 import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
 import { AnalyzeForm } from "@/components/site/AnalyzeForm";
+import { ScanSpecimen } from "@/components/site/ScanSpecimen";
+import { StatementReveal } from "@/components/site/StatementReveal";
+import { ReviewToAd } from "@/components/site/ReviewToAd";
 
 const EXAMPLES = ["cordless vacuum", "ergonomic office chair", "protein powder", "robot lawn mower"];
 
-const STEPS = [
+const REPORT_PARTS = [
   {
-    title: "Paste a product or a link",
-    body: "Type what you sell, what a competitor sells, or paste a product page. No account is needed.",
+    title: "Customer complaints",
+    body: "Grouped by theme, with the quotes behind each one and how often they came up.",
   },
+  { title: "Market gaps", body: "What people want that the products on the shelf don't give them." },
+  { title: "Entry strategies", body: "How to position a better product against exactly those complaints." },
   {
-    title: "Read the report",
-    body: "In about twenty seconds you get the complaints, the gaps, and a plan for getting in.",
+    title: "Ads, hooks and scripts",
+    body: "Creative you can test straight away, written against the problems customers named.",
   },
-  {
-    title: "Save the ones worth keeping",
-    body: "Flip the save switch on a report. Create a free account when asked and it lands on your dashboard.",
-  },
+];
+
+const FREE_FACTS = [
+  ["Analyze any product", "No account"],
+  ["Read the full report", "No account"],
+  ["Save it and come back", "Free account"],
 ];
 
 const FAQ = [
@@ -41,113 +49,128 @@ export default function HomePage() {
   return (
     <main>
       {/* Hero */}
-      <section className="mx-auto grid max-w-6xl gap-12 px-4 pb-20 pt-14 sm:px-6 sm:pt-20 lg:grid-cols-[1.15fr_1fr] lg:items-center lg:gap-16">
-        <div>
-          <h1 className="font-display text-5xl font-semibold leading-[1.02] tracking-tight sm:text-6xl lg:text-7xl">
-            Find the cavities in any product.
+      <section className="relative overflow-hidden">
+        <div aria-hidden className="chart-grid pointer-events-none absolute inset-0" />
+        <div className="relative mx-auto max-w-7xl px-4 pb-24 pt-12 sm:px-6 sm:pt-20">
+          <h1 className="display text-[clamp(3.4rem,11.5vw,10.5rem)]">
+            Find the cavities
+            <br />
+            in any product.
           </h1>
-          <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted">
-            Paste a product name or link. Caviti reads what customers say, then shows you the complaints,
-            the gaps nobody fills, and ad angles built on both. No account needed.
-          </p>
-          <div className="mt-9 max-w-xl">
-            <AnalyzeForm />
-          </div>
-          <p className="mt-4 text-sm text-muted">
-            Try{" "}
-            {EXAMPLES.map((ex, i) => (
-              <span key={ex}>
-                <Link
-                  href={`/analyze?q=${encodeURIComponent(ex)}`}
-                  className="text-foreground underline decoration-border underline-offset-4 hover:decoration-accent"
-                >
-                  {ex}
-                </Link>
-                {i < EXAMPLES.length - 1 ? ", " : ""}
-              </span>
-            ))}
-          </p>
-        </div>
 
-        {/* Example finding */}
-        <figure aria-label="Example of a finding" className="rounded-2xl border border-border bg-surface p-6 shadow-sm sm:p-8">
-          <figcaption className="text-sm text-muted">Example finding for “cordless vacuum”</figcaption>
-          <h2 className="mt-3 font-display text-xl font-semibold">Battery dies before the job is done</h2>
-          <blockquote className="mt-4 border-l-2 border-cavity pl-4 italic leading-relaxed">
-            {"“Great suction, but I get "}
-            <span className="mark-cavity">maybe ten minutes</span>
-            {" before it quits and I'm only halfway through the house.”"}
-          </blockquote>
-          <div className="mt-6 border-t border-border pt-5">
-            <p className="text-sm font-semibold">The gap</p>
-            <p className="mt-1 leading-relaxed text-muted">
-              A swappable battery that lets people finish a full clean without waiting to recharge.
-            </p>
+          <div className="mt-12 grid gap-12 lg:grid-cols-[1fr_1.05fr] lg:items-start lg:gap-16">
+            <div>
+              <p className="max-w-lg text-lg leading-relaxed text-muted sm:text-xl">
+                Paste a product name or link. Caviti reads what customers say, then shows you the complaints,
+                the gaps nobody fills, and ad angles built on both. No account needed.
+              </p>
+              <div className="mt-8 max-w-xl">
+                <AnalyzeForm />
+              </div>
+              <p className="mt-5 text-sm text-muted">
+                Try{" "}
+                {EXAMPLES.map((ex, i) => (
+                  <span key={ex}>
+                    <Link
+                      href={`/analyze?q=${encodeURIComponent(ex)}`}
+                      className="text-foreground underline decoration-border decoration-2 underline-offset-4 hover:decoration-accent"
+                    >
+                      {ex}
+                    </Link>
+                    {i < EXAMPLES.length - 1 ? ", " : ""}
+                  </span>
+                ))}
+              </p>
+            </div>
+            <ScanSpecimen />
           </div>
-          <div className="mt-5 border-t border-border pt-5">
-            <p className="text-sm font-semibold">The ad hook</p>
-            <p className="mt-1 font-display text-lg leading-snug">“Finish the whole house. Not half of it.”</p>
-          </div>
-        </figure>
+        </div>
       </section>
 
-      {/* How it works */}
+      {/* Statement */}
+      <section className="border-t border-border">
+        <div className="mx-auto max-w-7xl px-4 py-28 sm:px-6 sm:py-40">
+          <StatementReveal
+            text="Customers already told the internet exactly what is broken. Caviti reads all of it, so you start from the cavities, not from a guess."
+            marks={["broken", "cavities"]}
+          />
+        </div>
+      </section>
+
+      {/* Review to ad */}
       <section id="how" className="scroll-mt-20 border-t border-border bg-surface">
-        <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
-          <h2 className="max-w-2xl font-display text-3xl font-semibold tracking-tight sm:text-4xl">
-            From a product name to a plan in three steps
+        <div className="mx-auto max-w-7xl px-4 py-24 sm:px-6 sm:py-32">
+          <h2 className="display max-w-4xl text-[clamp(2.6rem,6.5vw,5.5rem)]">
+            From one angry review to a finished ad.
           </h2>
-          <ol className="mt-12 grid gap-10 md:grid-cols-3">
-            {STEPS.map((step, i) => (
-              <li key={step.title}>
-                <span className="font-display text-5xl font-semibold text-accent/40">{i + 1}</span>
-                <h3 className="mt-3 text-lg font-semibold">{step.title}</h3>
-                <p className="mt-2 leading-relaxed text-muted">{step.body}</p>
+          <p className="mb-16 mt-5 max-w-xl text-lg text-muted">
+            Every report follows the same path. Here is one example, start to finish.
+          </p>
+          <ReviewToAd />
+        </div>
+      </section>
+
+      {/* What you get */}
+      <section className="border-t border-border">
+        <div className="mx-auto max-w-7xl px-4 py-24 sm:px-6 sm:py-32">
+          <h2 className="display max-w-3xl text-[clamp(2.6rem,6.5vw,5.5rem)]">What every report contains</h2>
+          <ul className="mt-16 border-b border-border">
+            {REPORT_PARTS.map((part) => (
+              <li
+                key={part.title}
+                className="group grid gap-3 border-t border-border py-8 transition-colors hover:bg-accent-muted/40 md:grid-cols-[1.2fr_1fr] md:items-center md:gap-12 md:px-4"
+              >
+                <h3 className="display text-[clamp(2rem,4.6vw,4rem)] transition-transform duration-300 group-hover:translate-x-2">
+                  {part.title}
+                </h3>
+                <p className="max-w-md text-lg leading-relaxed text-muted">{part.body}</p>
               </li>
             ))}
-          </ol>
+          </ul>
         </div>
       </section>
 
-      {/* What's in a report */}
-      <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
-        <div className="grid gap-12 lg:grid-cols-[1fr_1.4fr]">
+      {/* Free to try */}
+      <section className="border-t border-border bg-surface">
+        <div className="mx-auto grid max-w-7xl gap-14 px-4 py-24 sm:px-6 sm:py-32 lg:grid-cols-2 lg:items-center">
+          <h2 className="display text-[clamp(2.6rem,6.5vw,5.5rem)]">Try everything first. Sign up only to keep it.</h2>
           <div>
-            <h2 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">
-              What you get in every report
-            </h2>
-            <p className="mt-4 max-w-md leading-relaxed text-muted">
-              Everything is built from what customers already said, so you start from evidence instead of a guess.
-            </p>
+            <ul className="border-b border-border">
+              {FREE_FACTS.map(([what, cost]) => (
+                <li key={what} className="flex items-center justify-between gap-4 border-t border-border py-5 text-lg">
+                  <span>{what}</span>
+                  <span
+                    className={`rounded-full px-3 py-1 text-sm font-medium ${
+                      cost === "No account" ? "bg-accent-muted text-accent-ink" : "border border-border text-muted"
+                    }`}
+                  >
+                    {cost}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-8 flex items-center gap-4 text-sm text-muted">
+              <span aria-hidden className="relative h-7 w-12 rounded-full bg-accent">
+                <span className="absolute right-0.5 top-0.5 h-6 w-6 rounded-full bg-on-accent" />
+              </span>
+              One switch on any report saves it to your dashboard.
+            </div>
           </div>
-          <dl className="border-b border-border">
-            {[
-              ["Customer complaints", "Grouped by theme, with the quotes behind each one and how often they came up."],
-              ["Market gaps", "What people want that the current products don't give them."],
-              ["Entry strategies", "How to position a better product against those complaints."],
-              ["Ad angles, hooks and scripts", "Ready-to-test creative that goes straight at the problems customers named."],
-            ].map(([term, desc]) => (
-              <div key={term} className="grid gap-1 border-t border-border py-5 sm:grid-cols-[220px_1fr] sm:gap-6">
-                <dt className="font-semibold">{term}</dt>
-                <dd className="leading-relaxed text-muted">{desc}</dd>
-              </div>
-            ))}
-          </dl>
         </div>
       </section>
 
       {/* FAQ */}
-      <section id="faq" className="scroll-mt-20 border-t border-border bg-surface">
-        <div className="mx-auto max-w-3xl px-4 py-20 sm:px-6">
-          <h2 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">Questions</h2>
-          <div className="mt-8 border-b border-border">
+      <section id="faq" className="scroll-mt-20 border-t border-border">
+        <div className="mx-auto grid max-w-7xl gap-12 px-4 py-24 sm:px-6 sm:py-32 lg:grid-cols-[1fr_1.4fr]">
+          <h2 className="display text-[clamp(2.6rem,6vw,5rem)]">Questions</h2>
+          <div className="border-b border-border">
             {FAQ.map((item) => (
-              <details key={item.q} className="group border-t border-border py-5">
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold">
+              <details key={item.q} className="group border-t border-border py-6">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-6 text-lg font-semibold sm:text-xl">
                   {item.q}
-                  <span aria-hidden className="text-xl text-muted transition-transform group-open:rotate-45">+</span>
+                  <span aria-hidden className="text-3xl font-light text-accent transition-transform group-open:rotate-45">+</span>
                 </summary>
-                <p className="mt-3 max-w-2xl leading-relaxed text-muted">{item.a}</p>
+                <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted">{item.a}</p>
               </details>
             ))}
           </div>
@@ -155,13 +178,21 @@ export default function HomePage() {
       </section>
 
       {/* Closing */}
-      <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
-        <div className="max-w-xl">
-          <h2 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">
-            Run your first analysis now
+      <section className="border-t border-border bg-surface">
+        <div className="mx-auto max-w-7xl px-4 py-24 sm:px-6 sm:py-36">
+          <h2 className="display text-[clamp(3rem,9vw,8rem)]">
+            Run your first scan.
           </h2>
-          <p className="mb-8 mt-3 text-muted">It takes about twenty seconds and costs nothing.</p>
-          <AnalyzeForm />
+          <p className="mb-10 mt-6 text-lg text-muted">It takes about twenty seconds and costs nothing.</p>
+          <div className="max-w-2xl">
+            <AnalyzeForm />
+          </div>
+          <Link
+            href="/signup"
+            className="mt-8 inline-flex items-center gap-1.5 text-sm font-medium text-accent-ink hover:underline"
+          >
+            Or create a free account first <ArrowUpRight className="h-4 w-4" />
+          </Link>
         </div>
       </section>
     </main>

@@ -15,7 +15,7 @@ interface AuthFormProps {
 }
 
 const field =
-  "w-full rounded-lg border border-border bg-surface px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted/70 focus:border-accent focus:outline-none disabled:opacity-60";
+  "w-full rounded-xl border border-border bg-background px-3.5 py-3 text-sm text-foreground placeholder:text-muted/70 focus:border-accent focus:outline-none disabled:opacity-60";
 
 export function AuthForm({ mode, onSuccess, onSwitchMode }: AuthFormProps) {
   const [firstName, setFirstName] = useState("");
@@ -127,7 +127,7 @@ export function AuthForm({ mode, onSuccess, onSwitchMode }: AuthFormProps) {
       <button
         type="submit"
         disabled={loading}
-        className="flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-accent text-sm font-medium text-white hover:bg-accent-ink disabled:opacity-60"
+        className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-accent text-sm font-medium text-on-accent hover:brightness-110 disabled:opacity-60"
       >
         {loading && <Loader2 className="h-4 w-4 animate-spin" />}
         {mode === "login" ? "Sign in" : "Create account"}

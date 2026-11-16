@@ -11,18 +11,37 @@
   --accent-muted: rgba(139, 92, 246, 0.12);
 }
 
-/* Public site + user dashboard: clinical light theme. */
+/* Public site + user dashboard. Light = clinical chart. */
 .site {
-  --background: #f3f7f6;
-  --foreground: #0e1f26;
-  --muted: #55676e;
-  --border: #d3dedc;
+  --background: #edf1ef;
+  --foreground: #071418;
+  --muted: #475b60;
+  --border: #c9d5d2;
   --surface: #ffffff;
-  --accent: #0b7f77;
-  --accent-muted: #dceeea;
-  --accent-ink: #086660;
-  --cavity: #cf4429;
-  --cavity-muted: #fbe4de;
+  --accent: #007a6e;
+  --accent-ink: #00584f;
+  --accent-muted: #d3ebe6;
+  --on-accent: #ffffff;
+  --cavity: #dd3519;
+  --cavity-muted: #fbdcd5;
+  --glow: transparent;
+  --loop: 9s;
+}
+
+/* Dark = radiograph. */
+html[data-theme="dark"] .site {
+  --background: #060b10;
+  --foreground: #e8f1f2;
+  --muted: #8ba0a7;
+  --border: #1a2832;
+  --surface: #0c141b;
+  --accent: #4fe3d2;
+  --accent-ink: #7cefe1;
+  --accent-muted: #0e2a2c;
+  --on-accent: #032421;
+  --cavity: #ff6a4d;
+  --cavity-muted: #3b1912;
+  --glow: rgba(79, 227, 210, 0.13);
 }
 
 @theme inline {
@@ -34,6 +53,7 @@
   --color-accent: var(--accent);
   --color-accent-muted: var(--accent-muted);
   --color-accent-ink: var(--accent-ink);
+  --color-on-accent: var(--on-accent);
   --color-cavity: var(--cavity);
   --color-cavity-muted: var(--cavity-muted);
   --font-sans: var(--font-geist-sans);
@@ -54,36 +74,102 @@ body {
 }
 
 body:has(.site) {
-  background: #f3f7f6;
+  background: #edf1ef;
+}
+html[data-theme="dark"] body:has(.site) {
+  background: #060b10;
 }
 
 .site ::selection {
-  background: #bfe3dc;
-  color: #0e1f26;
+  background: var(--accent);
+  color: var(--on-accent);
 }
 
 .site :focus-visible {
   outline: 2px solid var(--accent);
-  outline-offset: 2px;
+  outline-offset: 3px;
 }
 
-/* Marker-style highlight used for complaints and gaps. */
+/* Wide, tight display type for headlines. */
+.display {
+  font-family: var(--font-display), var(--font-geist-sans), sans-serif;
+  font-variation-settings: "wdth" 82;
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 0.92;
+}
+
+/* Marker-style highlight used for complaints. */
 .mark-cavity {
   background-image: linear-gradient(transparent 58%, var(--cavity-muted) 58%);
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;
 }
 
-@keyframes scan {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(260%); }
+/* Chart-paper grid behind the hero. */
+.chart-grid {
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 56px 56px;
+  -webkit-mask-image: radial-gradient(ellipse 70% 70% at 65% 40%, #000 15%, transparent 75%);
+  mask-image: radial-gradient(ellipse 70% 70% at 65% 40%, #000 15%, transparent 75%);
+  opacity: 0.7;
+}
+
+/* ---------- Scan specimen (hero) ---------- */
+.scan-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  top: 0;
+  opacity: 0;
+  background: var(--accent);
+  box-shadow: 0 0 18px 4px var(--accent);
+  animation: scan-y var(--loop) ease-in-out infinite;
+}
+@keyframes scan-y {
+  0% { top: 0; opacity: 0; }
+  3% { opacity: 1; }
+  44% { top: 100%; opacity: 1; }
+  48%, 100% { top: 100%; opacity: 0; }
+}
+.flag {
+  background-image: linear-gradient(var(--cavity-muted), var(--cavity-muted));
+  background-repeat: no-repeat;
+  background-size: 0% 100%;
+  box-shadow: inset 0 -2px 0 var(--cavity);
+  animation: flag-on var(--loop) linear infinite both;
+  animation-delay: var(--d);
+}
+@keyframes flag-on {
+  0% { background-size: 0% 100%; box-shadow: inset 0 0 0 transparent; }
+  4% { background-size: 100% 100%; box-shadow: inset 0 -2px 0 var(--cavity); }
+  88% { background-size: 100% 100%; box-shadow: inset 0 -2px 0 var(--cavity); }
+  94%, 100% { background-size: 0% 100%; box-shadow: inset 0 0 0 transparent; }
+}
+.scan-result {
+  opacity: 0;
+  animation: result-on var(--loop) ease-out infinite both;
+  animation-delay: var(--d);
+}
+@keyframes result-on {
+  0% { opacity: 0; transform: translateY(8px); }
+  4% { opacity: 1; transform: translateY(0); }
+  88% { opacity: 1; transform: translateY(0); }
+  94%, 100% { opacity: 0; transform: translateY(0); }
 }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
+  .scan-line { display: none; }
+  .flag { animation: none; background-size: 100% 100%; }
+  .scan-result { animation: none; opacity: 1; transform: none; }
+  @keyframes scan { to { transform: none; } }
+}
+
+@keyframes scan {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(260%); }
 }
