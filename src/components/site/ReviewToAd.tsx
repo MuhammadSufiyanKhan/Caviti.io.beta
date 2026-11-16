@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 
 const ROWS = [
   {
@@ -21,7 +21,6 @@ const ROWS = [
 /** The four-step path from raw review to ad, with a line that draws as you scroll. */
 export function ReviewToAd() {
   const ref = useRef<HTMLOListElement>(null);
-  const still = useReducedMotion() ?? false;
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start 0.7", "end 0.6"] });
   const scaleY = useTransform(scrollYProgress, [0, 1], [0, 1]);
 
@@ -30,8 +29,8 @@ export function ReviewToAd() {
       <span aria-hidden className="absolute bottom-2 left-[7px] top-2 w-px bg-border sm:left-[9px]" />
       <motion.span
         aria-hidden
-        style={{ scaleY: still ? 1 : scaleY, transformOrigin: "top" }}
-        className="absolute bottom-2 left-[7px] top-2 w-px bg-accent sm:left-[9px]"
+        style={{ scaleY, transformOrigin: "top" }}
+        className="draw-line absolute bottom-2 left-[7px] top-2 w-px bg-accent sm:left-[9px]"
       />
       {ROWS.map((row) => (
         <li key={row.label} className="relative grid gap-3 pb-14 pl-10 last:pb-0 sm:pl-14 md:grid-cols-[220px_1fr] md:gap-10">

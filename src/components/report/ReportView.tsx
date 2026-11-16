@@ -1,50 +1,28 @@
-import type { ReactNode } from "react";
-import { ExternalLink, Loader2 } from "lucide-react";
+"use client";
+
+import { useCallback, useMemo, useState, type ReactNode } from "react";
+import { ExternalLink, ListChecks, Loader2, X } from "lucide-react";
 import { parseSection } from "@/lib/report-metrics";
+import { reportToMarkdown } from "@/lib/report-markdown";
+import { scrollToId } from "@/lib/smooth-scroll";
 import type { GuestReport } from "@/lib/report-data";
+import { Reveal } from "@/components/site/Reveal";
+import { AngleDeck } from "@/components/report/AngleDeck";
+import { ComplaintExplorer, type ComplaintItem } from "@/components/report/ComplaintExplorer";
+import { CopyButton } from "@/components/report/CopyButton";
+import { Inline } from "@/components/report/Inline";
+import { PickList, type PlanKind } from "@/components/report/PickList";
+import { ReportNav, type NavItem } from "@/components/report/ReportNav";
+import { ScriptPlayer } from "@/components/report/ScriptPlayer";
+import { StatCounter } from "@/components/report/StatCounter";
 
-function Inline({ text }: { text: string }) {
-  const parts = text.split(/(\*\*[^*]+\*\*)/g);
+function Section({ id, title, intro, children }: { id: string; title: string; intro?: string; children: ReactNode }) {
   return (
-    <>
-      {parts.map((part, i) =>
-        part.startsWith("**") && part.endsWith("**") ? (
-          <strong key={i} className="font-semibold">{part.slice(2, -2)}</strong>
-        ) : (
-          <span key={i}>{part}</span>
-        )
-      )}
-    </>
-  );
-}
-
-function Section({ title, intro, children }: { title: string; intro?: string; children: ReactNode }) {
-  return (
-    <section className="mt-20">
+    <Reveal as="section" id={id} className="scroll-mt-28 pb-20">
       <h2 className="display text-[clamp(2.2rem,5vw,4rem)]">{title}</h2>
       {intro && <p className="mt-3 max-w-2xl text-lg text-muted">{intro}</p>}
-      <div className="mt-6">{children}</div>
-    </section>
-  );
-}
-
-function Findings({ items, tone }: { items: string[]; tone: "cavity" | "accent" }) {
-  return (
-    <ul className="border-b border-border">
-      {items.map((item, i) => (
-        <li key={i} className="flex gap-4 border-t border-border py-4">
-          <span
-            aria-hidden
-            className={`mt-2.5 h-2 w-2 shrink-0 rounded-full ${tone === "cavity" ? "bg-cavity" : "bg-accent"}`}
-          />
-          <p className="max-w-3xl text-lg leading-relaxed">
-            <span className={tone === "cavity" ? "mark-cavity" : ""}>
-              <Inline text={item} />
-            </span>
-          </p>
-        </li>
-      ))}
-    </ul>
+      <div className="mt-8">{children}</div>
+    </Reveal>
   );
 }
 
@@ -56,11 +34,20 @@ function Pending({ label }: { label: string }) {
   );
 }
 
+const KIND_LABEL: Record<PlanKind, string> = { gap: "Gap to fill", strategy: "Way in" };
+
+/** Short title for a written complaint when no grouped themes exist. */
+function titleOf(text: string) {
+  const plain = text.replace(/\*\*/g, "");
+  const first = plain.split(/[.:;]\s|\s[—–-]\s/)[0];
+  return first.length > 90 ? `${first.slice(0, 88)}…` : first;
+}
+
 interface ReportViewProps {
   report: GuestReport;
   themesLoading: boolean;
   adsLoading: boolean;
-  /** Shown under the title: the save toggle, or saved status. */
+  /** Shown under the stats: the save toggle, or saved status. */
   actions?: ReactNode;
   dateLabel?: string;
 }
@@ -71,7 +58,47 @@ export function ReportView({ report, themesLoading, adsLoading, actions, dateLab
   const gaps = parseSection(data.analysis, "MARKET GAPS");
   const strategies = parseSection(data.analysis, "ENTRY STRATEGIES");
   const themes = (data.complaint_themes ?? []).filter((t) => t && (t.theme || (t.quotes ?? []).length > 0));
-  const hasAds = !!(data.ad_angles?.length || data.hooks?.length || data.scripts?.length);
+  const angles = data.ad_angles ?? [];
+  const hooks = data.hooks ?? [];
+  const scripts = (data.scripts ?? []).filter((s) => (s.scenes?.length ?? 0) > 0);
+  const hasAds = angles.length > 0 || hooks.length > 0 || scripts.length > 0;
+
+  // Your plan: gaps and strategies the reader picks.
+  const [plan, setPlan] = useState<{ kind: PlanKind; text: string }[]>([]);
+  const isPicked = useCallback((kind: PlanKind, text: string) => plan.some((p) => p.kind === kind && p.text === text), [plan]);
+  const toggle = useCallback((kind: PlanKind, text: string) => {
+    setPlan((prev) =>
+      prev.some((p) => p.kind === kind && p.text === text)
+        ? prev.filter((p) => !(p.kind === kind && p.text === text))
+        : [...prev, { kind, text }]
+    );
+  }, []);
+  const planText = () =>
+    `Plan for ${name}\n` + plan.map((p) => `- [${KIND_LABEL[p.kind]}] ${p.text.replace(/\*\*/g, "")}`).join("\n");
+
+  const complaintItems: ComplaintItem[] = useMemo(() => {
+    if (themes.length > 0) {
+      return themes.map((t, i) => ({
+        id: `t-${i}`,
+        title: t.theme,
+        mentions: t.mentions,
+        description: t.description,
+        quotes: t.quotes ?? [],
+      }));
+    }
+    return negatives.map((text, i) => ({ id: `n-${i}`, title: titleOf(text), description: text, quotes: [] }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data.analysis, data.complaint_themes]);
+
+  const navItems: NavItem[] = [
+    { id: "complaints", label: "Complaints" },
+    { id: "gaps", label: "Gaps" },
+    { id: "strategy", label: "How to get in" },
+    ...(angles.length || adsLoading ? [{ id: "angles", label: "Ad angles" }] : []),
+    ...(hooks.length ? [{ id: "hooks", label: "Hooks" }] : []),
+    ...(scripts.length ? [{ id: "scripts", label: "Scripts" }] : []),
+    ...(plan.length ? [{ id: "plan", label: `Your plan (${plan.length})` }] : []),
+  ];
 
   const stats = [
     typeof data.reviews_count === "number" && data.reviews_count > 0
@@ -83,11 +110,9 @@ export function ReportView({ report, themesLoading, adsLoading, actions, dateLab
   ].filter(Boolean) as { value: string | number; label: string }[];
 
   return (
-    <article>
+    <div>
       <header>
-        <h1 className="display text-[clamp(3rem,9vw,7.5rem)] capitalize">
-          {name}
-        </h1>
+        <h1 className="display text-[clamp(3rem,9vw,7.5rem)] capitalize">{name}</h1>
         <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted">
           {dateLabel && <span>{dateLabel}</span>}
           {data.url && (
@@ -103,134 +128,146 @@ export function ReportView({ report, themesLoading, adsLoading, actions, dateLab
           )}
         </div>
 
-        <dl className="mt-8 grid grid-cols-2 gap-x-6 gap-y-5 border-y border-border py-5 sm:grid-cols-4">
+        <dl className="mt-8 grid grid-cols-2 gap-x-6 gap-y-5 border-y border-border py-6 sm:grid-cols-4">
           {stats.map((s) => (
-            <div key={s.label}>
-              <dd className="display text-5xl tabular-nums sm:text-6xl">{s.value}</dd>
-              <dt className="mt-0.5 text-sm text-muted">{s.label}</dt>
-            </div>
+            <StatCounter key={s.label} value={s.value} label={s.label} />
           ))}
         </dl>
 
-        {actions && <div className="mt-6">{actions}</div>}
+        <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3">
+          {actions}
+          <CopyButton label="Copy whole report" getText={() => reportToMarkdown(report)} />
+        </div>
       </header>
 
-      <Section
-        title="What customers complain about"
-        intro="The problems people keep running into, in their own words where we found them."
-      >
-        {themesLoading && <div className="mb-5"><Pending label="Grouping customer quotes by complaint…" /></div>}
-        {themes.length > 0 && (
-          <div className="mb-8 space-y-8">
-            {themes.map((theme, i) => (
-              <div key={i}>
-                <h3 className="flex flex-wrap items-baseline gap-x-3 font-semibold">
-                  <span>{theme.theme}</span>
-                  {typeof theme.mentions === "number" && theme.mentions > 0 && (
-                    <span className="text-sm font-normal text-cavity">
-                      {theme.mentions} {theme.mentions === 1 ? "mention" : "mentions"}
-                    </span>
-                  )}
-                </h3>
-                {theme.description && <p className="mt-1 max-w-3xl text-sm text-muted">{theme.description}</p>}
-                <div className="mt-3 space-y-2">
-                  {(theme.quotes ?? []).map((quote, q) => (
-                    <blockquote
-                      key={q}
-                      className="max-w-3xl whitespace-pre-wrap border-l-2 border-cavity pl-4 text-[15px] italic leading-relaxed"
-                    >
-                      “{quote}”
-                    </blockquote>
+      <div className="mt-12 lg:grid lg:grid-cols-[170px_minmax(0,1fr)] lg:gap-14">
+        <ReportNav items={navItems} />
+
+        <div>
+          <Section
+            id="complaints"
+            title="What customers complain about"
+            intro="Pick a complaint to see the evidence behind it. Longer bars came up more often."
+          >
+            {themesLoading && <div className="mb-5"><Pending label="Grouping customer quotes by complaint…" /></div>}
+            {complaintItems.length > 0 ? (
+              <ComplaintExplorer key={complaintItems[0].id + complaintItems.length} items={complaintItems} />
+            ) : (
+              <p className="text-muted">No complaints were found for this product.</p>
+            )}
+            {themes.length > 0 && negatives.length > 0 && (
+              <details className="group mt-8 border-t border-border pt-5">
+                <summary className="cursor-pointer list-none font-semibold text-accent-ink hover:underline">
+                  Read the written analysis
+                </summary>
+                <ul className="mt-4 space-y-3">
+                  {negatives.map((n) => (
+                    <li key={n} className="flex gap-3 text-lg leading-relaxed">
+                      <span aria-hidden className="mt-3 h-1.5 w-1.5 shrink-0 rounded-full bg-cavity" />
+                      <span><Inline text={n} /></span>
+                    </li>
                   ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-        {negatives.length > 0 ? (
-          <Findings items={negatives} tone="cavity" />
-        ) : (
-          <p className="text-muted">No complaints were found for this product.</p>
-        )}
-      </Section>
-
-      <Section title="Gaps nobody is filling" intro="What customers want that the current options don't give them.">
-        {gaps.length > 0 ? <Findings items={gaps} tone="accent" /> : <p className="text-muted">No gaps were found.</p>}
-      </Section>
-
-      <Section title="How to get in" intro="Ways to position a better product against these complaints.">
-        {strategies.length > 0 ? (
-          <Findings items={strategies} tone="accent" />
-        ) : (
-          <p className="text-muted">No strategies were generated.</p>
-        )}
-      </Section>
-
-      {(hasAds || adsLoading) && (
-        <>
-          <Section title="Ad angles" intro="Marketing positions that go straight at the complaints above.">
-            {adsLoading && !hasAds && <Pending label="Writing ad angles, hooks and scripts…" />}
-            <div className="grid gap-x-10 gap-y-8 md:grid-cols-2">
-              {(data.ad_angles ?? []).map((angle, i) => (
-                <div key={i} className="border-t-2 border-foreground pt-4">
-                  <h3 className="display text-2xl leading-tight">{angle.name}</h3>
-                  <dl className="mt-3 space-y-2.5 text-sm leading-relaxed">
-                    <div><dt className="inline font-semibold">Pain: </dt><dd className="inline text-muted">{angle.customerPain}</dd></div>
-                    <div><dt className="inline font-semibold">Hidden frustration: </dt><dd className="inline text-muted">{angle.hiddenFrustration}</dd></div>
-                    <div><dt className="inline font-semibold">Market gap: </dt><dd className="inline text-muted">{angle.marketGap}</dd></div>
-                    <div><dt className="inline font-semibold">Why it works: </dt><dd className="inline text-muted">{angle.whyItWorks}</dd></div>
-                  </dl>
-                </div>
-              ))}
-            </div>
+                </ul>
+              </details>
+            )}
           </Section>
 
-          {(data.hooks?.length ?? 0) > 0 && (
-            <Section title="Hooks" intro="Opening lines for the first one to three seconds of an ad.">
+          <Section
+            id="gaps"
+            title="Gaps nobody is filling"
+            intro="What customers want that the current options don't give them. Add the ones worth acting on to your plan."
+          >
+            {gaps.length > 0 ? (
+              <PickList items={gaps} kind="gap" isPicked={isPicked} onToggle={toggle} />
+            ) : (
+              <p className="text-muted">No gaps were found.</p>
+            )}
+          </Section>
+
+          <Section id="strategy" title="How to get in" intro="Ways to position a better product against these complaints.">
+            {strategies.length > 0 ? (
+              <PickList items={strategies} kind="strategy" isPicked={isPicked} onToggle={toggle} />
+            ) : (
+              <p className="text-muted">No strategies were generated.</p>
+            )}
+          </Section>
+
+          {(hasAds || adsLoading) && (
+            <>
+              <Section id="angles" title="Ad angles" intro="Marketing positions that go straight at the complaints above.">
+                {adsLoading && !hasAds && <Pending label="Writing ad angles, hooks and scripts…" />}
+                <AngleDeck angles={angles} />
+              </Section>
+
+              {hooks.length > 0 && (
+                <Section id="hooks" title="Hooks" intro="Opening lines for the first one to three seconds of an ad.">
+                  <ul className="border-b border-border">
+                    {hooks.map((hook, i) => (
+                      <li key={i} className="flex items-start justify-between gap-4 border-t border-border py-5">
+                        <div className="min-w-0">
+                          {hook.hookType && <p className="text-sm font-medium text-accent-ink">{hook.hookType}</p>}
+                          <p className="display mt-1 max-w-3xl text-2xl leading-tight sm:text-3xl">“{hook.hook}”</p>
+                          {hook.visualDirection && (
+                            <p className="mt-2 max-w-3xl text-sm text-muted">
+                              <span className="font-semibold text-foreground">Visual: </span>
+                              {hook.visualDirection}
+                            </p>
+                          )}
+                        </div>
+                        <CopyButton label="Copy" getText={() => hook.hook} className="shrink-0" />
+                      </li>
+                    ))}
+                  </ul>
+                </Section>
+              )}
+
+              {scripts.length > 0 && (
+                <Section id="scripts" title="Video scripts" intro="Press play to step through each scene, or jump to one.">
+                  <div className="space-y-6">
+                    {scripts.map((script, i) => (
+                      <ScriptPlayer key={i} script={script} />
+                    ))}
+                  </div>
+                </Section>
+              )}
+            </>
+          )}
+
+          {plan.length > 0 && (
+            <Section id="plan" title="Your plan" intro="The gaps and strategies you picked, ready to copy.">
               <ul className="border-b border-border">
-                {data.hooks!.map((hook, i) => (
-                  <li key={i} className="border-t border-border py-5">
-                    {hook.hookType && <p className="text-sm font-medium text-accent-ink">{hook.hookType}</p>}
-                    <p className="mt-1 max-w-3xl display text-2xl leading-tight sm:text-3xl">“{hook.hook}”</p>
-                    {hook.visualDirection && (
-                      <p className="mt-2 max-w-3xl text-sm text-muted">
-                        <span className="font-semibold text-foreground">Visual: </span>{hook.visualDirection}
-                      </p>
-                    )}
+                {plan.map((item) => (
+                  <li key={`${item.kind}-${item.text}`} className="flex items-start gap-4 border-t border-border py-4">
+                    <span className="mt-1 shrink-0 rounded-full bg-accent-muted px-2.5 py-0.5 text-xs font-medium text-accent-ink">
+                      {KIND_LABEL[item.kind]}
+                    </span>
+                    <p className="min-w-0 flex-1 text-lg leading-relaxed"><Inline text={item.text} /></p>
+                    <button
+                      type="button"
+                      onClick={() => toggle(item.kind, item.text)}
+                      aria-label="Remove from plan"
+                      className="mt-1 rounded-full p-1.5 text-muted hover:bg-cavity-muted hover:text-cavity"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
                   </li>
                 ))}
               </ul>
+              <div className="mt-5"><CopyButton label="Copy plan" getText={planText} /></div>
             </Section>
           )}
+        </div>
+      </div>
 
-          {(data.scripts?.length ?? 0) > 0 && (
-            <Section title="Video scripts" intro="Short ad scripts with the visual and the voiceover for each scene.">
-              <div className="space-y-10">
-                {data.scripts!.map((script, i) => (
-                  <div key={i}>
-                    <p className="flex flex-wrap items-baseline gap-x-4 gap-y-1 text-sm">
-                      <span className="font-semibold">{script.format || "Script"}</span>
-                      {script.targetEmotion && <span className="text-muted">Aims for {script.targetEmotion.toLowerCase()}</span>}
-                      {script.duration && <span className="text-muted">{script.duration}</span>}
-                    </p>
-                    <ol className="mt-3 border-b border-border">
-                      {(script.scenes ?? []).map((scene, s) => (
-                        <li key={s} className="grid gap-1 border-t border-border py-4 sm:grid-cols-[110px_1fr] sm:gap-6">
-                          <span className="text-sm font-semibold">Scene {scene.sceneNumber}</span>
-                          <div className="max-w-3xl space-y-1 text-sm leading-relaxed">
-                            <p><span className="font-semibold">Visual: </span><span className="text-muted">{scene.visual}</span></p>
-                            <p><span className="font-semibold">Voice: </span><span className="italic">“{scene.voice}”</span></p>
-                          </div>
-                        </li>
-                      ))}
-                    </ol>
-                  </div>
-                ))}
-              </div>
-            </Section>
-          )}
-        </>
+      {plan.length > 0 && (
+        <button
+          type="button"
+          onClick={() => scrollToId("plan")}
+          className="fixed bottom-5 right-5 z-40 inline-flex items-center gap-2 rounded-full bg-foreground px-5 py-3 text-sm font-medium text-background shadow-lg hover:opacity-90"
+        >
+          <ListChecks className="h-4 w-4" /> Your plan ({plan.length})
+        </button>
       )}
-    </article>
+    </div>
   );
 }

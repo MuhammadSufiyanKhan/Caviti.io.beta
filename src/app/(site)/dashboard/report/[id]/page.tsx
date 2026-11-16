@@ -60,7 +60,7 @@ export default function SavedReportPage() {
   };
 
   return (
-    <main className="mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-14">
+    <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-14">
       <Link href="/dashboard" className="mb-8 inline-flex items-center gap-2 text-sm text-muted hover:text-foreground">
         <ArrowLeft className="h-4 w-4" /> Back to your reports
       </Link>

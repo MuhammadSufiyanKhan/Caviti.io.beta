@@ -34,13 +34,14 @@ export function AuthModal({ open, onClose, onAuthenticated }: AuthModalProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-background/70 backdrop-blur-sm p-4 sm:items-center"
+      data-lenis-prevent className="fixed inset-0 z-50 flex items-end justify-center bg-background/70 backdrop-blur-sm p-4 sm:items-center"
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
       <div
         ref={panelRef}
+        data-lenis-prevent
         role="dialog"
         aria-modal="true"
         aria-labelledby="auth-modal-title"

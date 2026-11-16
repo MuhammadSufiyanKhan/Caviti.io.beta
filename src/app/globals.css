@@ -65,6 +65,12 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Lenis smooth scrolling */
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
+.lenis.lenis-stopped { overflow: hidden; }
+
 body {
   background: var(--background);
   color: var(--foreground);
@@ -166,10 +172,24 @@ html[data-theme="dark"] body:has(.site) {
   .scan-line { display: none; }
   .flag { animation: none; background-size: 100% 100%; }
   .scan-result { animation: none; opacity: 1; transform: none; }
+  /* Scroll-linked effects show their end state instead of animating. */
+  .statement-word { opacity: 1 !important; }
+  .draw-line { transform: scaleY(1) !important; }
   @keyframes scan { to { transform: none; } }
 }
 
 @keyframes scan {
   0% { transform: translateX(-100%); }
   100% { transform: translateX(260%); }
+}
+
+/* Storyboard player progress */
+@keyframes seg-fill {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }

@@ -4,6 +4,9 @@ import { AnalyzeForm } from "@/components/site/AnalyzeForm";
 import { ScanSpecimen } from "@/components/site/ScanSpecimen";
 import { StatementReveal } from "@/components/site/StatementReveal";
 import { ReviewToAd } from "@/components/site/ReviewToAd";
+import { HeroHeadline } from "@/components/site/HeroHeadline";
+import { PointCloudLazy } from "@/components/site/PointCloudLazy";
+import { Reveal } from "@/components/site/Reveal";
 
 const EXAMPLES = ["cordless vacuum", "ergonomic office chair", "protein powder", "robot lawn mower"];
 
@@ -51,15 +54,17 @@ export default function HomePage() {
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div aria-hidden className="chart-grid pointer-events-none absolute inset-0" />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-[12%] top-0 h-[62%] w-[85%] opacity-40 sm:-right-[6%] sm:h-[78%] sm:w-[62%] sm:opacity-90 lg:opacity-100"
+        >
+          <PointCloudLazy className="h-full w-full" />
+        </div>
         <div className="relative mx-auto max-w-7xl px-4 pb-24 pt-12 sm:px-6 sm:pt-20">
-          <h1 className="display text-[clamp(3.4rem,11.5vw,10.5rem)]">
-            Find the cavities
-            <br />
-            in any product.
-          </h1>
+          <HeroHeadline lines={["Find the cavities", "in any product."]} />
 
           <div className="mt-12 grid gap-12 lg:grid-cols-[1fr_1.05fr] lg:items-start lg:gap-16">
-            <div>
+            <Reveal y={30} delay={0.55}>
               <p className="max-w-lg text-lg leading-relaxed text-muted sm:text-xl">
                 Paste a product name or link. Caviti reads what customers say, then shows you the complaints,
                 the gaps nobody fills, and ad angles built on both. No account needed.
@@ -81,8 +86,10 @@ export default function HomePage() {
                   </span>
                 ))}
               </p>
-            </div>
-            <ScanSpecimen />
+            </Reveal>
+            <Reveal y={50} delay={0.75}>
+              <ScanSpecimen />
+            </Reveal>
           </div>
         </div>
       </section>
@@ -100,12 +107,14 @@ export default function HomePage() {
       {/* Review to ad */}
       <section id="how" className="scroll-mt-20 border-t border-border bg-surface">
         <div className="mx-auto max-w-7xl px-4 py-24 sm:px-6 sm:py-32">
-          <h2 className="display max-w-4xl text-[clamp(2.6rem,6.5vw,5.5rem)]">
-            From one angry review to a finished ad.
-          </h2>
-          <p className="mb-16 mt-5 max-w-xl text-lg text-muted">
-            Every report follows the same path. Here is one example, start to finish.
-          </p>
+          <Reveal>
+            <h2 className="display max-w-4xl text-[clamp(2.6rem,6.5vw,5.5rem)]">
+              From one angry review to a finished ad.
+            </h2>
+            <p className="mb-16 mt-5 max-w-xl text-lg text-muted">
+              Every report follows the same path. Here is one example, start to finish.
+            </p>
+          </Reveal>
           <ReviewToAd />
         </div>
       </section>
@@ -113,8 +122,10 @@ export default function HomePage() {
       {/* What you get */}
       <section className="border-t border-border">
         <div className="mx-auto max-w-7xl px-4 py-24 sm:px-6 sm:py-32">
-          <h2 className="display max-w-3xl text-[clamp(2.6rem,6.5vw,5.5rem)]">What every report contains</h2>
-          <ul className="mt-16 border-b border-border">
+          <Reveal>
+            <h2 className="display max-w-3xl text-[clamp(2.6rem,6.5vw,5.5rem)]">What every report contains</h2>
+          </Reveal>
+          <Reveal as="ul" stagger y={30} className="mt-16 border-b border-border">
             {REPORT_PARTS.map((part) => (
               <li
                 key={part.title}
@@ -126,15 +137,17 @@ export default function HomePage() {
                 <p className="max-w-md text-lg leading-relaxed text-muted">{part.body}</p>
               </li>
             ))}
-          </ul>
+          </Reveal>
         </div>
       </section>
 
       {/* Free to try */}
       <section className="border-t border-border bg-surface">
         <div className="mx-auto grid max-w-7xl gap-14 px-4 py-24 sm:px-6 sm:py-32 lg:grid-cols-2 lg:items-center">
-          <h2 className="display text-[clamp(2.6rem,6.5vw,5.5rem)]">Try everything first. Sign up only to keep it.</h2>
-          <div>
+          <Reveal>
+            <h2 className="display text-[clamp(2.6rem,6.5vw,5.5rem)]">Try everything first. Sign up only to keep it.</h2>
+          </Reveal>
+          <Reveal delay={0.15}>
             <ul className="border-b border-border">
               {FREE_FACTS.map(([what, cost]) => (
                 <li key={what} className="flex items-center justify-between gap-4 border-t border-border py-5 text-lg">
@@ -155,15 +168,17 @@ export default function HomePage() {
               </span>
               One switch on any report saves it to your dashboard.
             </div>
-          </div>
+          </Reveal>
         </div>
       </section>
 
       {/* FAQ */}
       <section id="faq" className="scroll-mt-20 border-t border-border">
         <div className="mx-auto grid max-w-7xl gap-12 px-4 py-24 sm:px-6 sm:py-32 lg:grid-cols-[1fr_1.4fr]">
-          <h2 className="display text-[clamp(2.6rem,6vw,5rem)]">Questions</h2>
-          <div className="border-b border-border">
+          <Reveal>
+            <h2 className="display text-[clamp(2.6rem,6vw,5rem)]">Questions</h2>
+          </Reveal>
+          <Reveal as="div" stagger y={24} className="border-b border-border">
             {FAQ.map((item) => (
               <details key={item.q} className="group border-t border-border py-6">
                 <summary className="flex cursor-pointer list-none items-center justify-between gap-6 text-lg font-semibold sm:text-xl">
@@ -173,20 +188,20 @@ export default function HomePage() {
                 <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted">{item.a}</p>
               </details>
             ))}
-          </div>
+          </Reveal>
         </div>
       </section>
 
       {/* Closing */}
       <section className="border-t border-border bg-surface">
         <div className="mx-auto max-w-7xl px-4 py-24 sm:px-6 sm:py-36">
-          <h2 className="display text-[clamp(3rem,9vw,8rem)]">
-            Run your first scan.
-          </h2>
-          <p className="mb-10 mt-6 text-lg text-muted">It takes about twenty seconds and costs nothing.</p>
-          <div className="max-w-2xl">
-            <AnalyzeForm />
-          </div>
+          <Reveal>
+            <h2 className="display text-[clamp(3rem,9vw,8rem)]">Run your first scan.</h2>
+            <p className="mb-10 mt-6 text-lg text-muted">It takes about twenty seconds and costs nothing.</p>
+            <div className="max-w-2xl">
+              <AnalyzeForm />
+            </div>
+          </Reveal>
           <Link
             href="/signup"
             className="mt-8 inline-flex items-center gap-1.5 text-sm font-medium text-accent-ink hover:underline"

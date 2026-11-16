@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Check, Loader2 } from "lucide-react";
 import { AnalyzeForm } from "@/components/site/AnalyzeForm";
+import { PointCloudLazy } from "@/components/site/PointCloudLazy";
 import { ReportView } from "@/components/report/ReportView";
 import { SaveReportToggle } from "@/components/report/SaveReportToggle";
 import { useEnrichedReport } from "@/components/report/useEnrichedReport";
@@ -94,7 +95,7 @@ function Analysis({ q }: { q: string }) {
   );
 
   return (
-    <main className="mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-14">
+    <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-14">
       {!q && (
         <div className="py-10">
           <h1 className="display text-[clamp(2.8rem,7vw,5.5rem)]">
@@ -116,28 +117,31 @@ function Analysis({ q }: { q: string }) {
       )}
 
       {loading && (
-        <div className="py-8" role="status" aria-live="polite">
-          <h1 className="display text-4xl">
-            Analyzing <span className="capitalize">{q}</span>
-          </h1>
-          <div className="mt-5 h-1 w-full max-w-md overflow-hidden rounded-full bg-border">
-            <div className="h-full w-1/3 rounded-full bg-accent" style={{ animation: "scan 1.6s ease-in-out infinite" }} />
+        <div className="grid items-center gap-8 py-6 md:grid-cols-[1fr_320px]" role="status" aria-live="polite">
+          <div>
+            <h1 className="display text-4xl sm:text-5xl">
+              Analyzing <span className="capitalize">{q}</span>
+            </h1>
+            <div className="mt-5 h-1 w-full max-w-md overflow-hidden rounded-full bg-border">
+              <div className="h-full w-1/3 rounded-full bg-accent" style={{ animation: "scan 1.6s ease-in-out infinite" }} />
+            </div>
+            <ol className="mt-6 space-y-3">
+              {STEPS.map((label, i) => (
+                <li key={label} className={`flex items-center gap-3 text-sm ${i <= step ? "text-foreground" : "text-muted/60"}`}>
+                  {i < step ? (
+                    <Check className="h-4 w-4 text-accent" />
+                  ) : i === step ? (
+                    <Loader2 className="h-4 w-4 animate-spin text-accent" />
+                  ) : (
+                    <span className="h-4 w-4" />
+                  )}
+                  {label}
+                </li>
+              ))}
+            </ol>
+            <p className="mt-6 text-sm text-muted">This usually takes 10 to 20 seconds.</p>
           </div>
-          <ol className="mt-6 space-y-3">
-            {STEPS.map((label, i) => (
-              <li key={label} className={`flex items-center gap-3 text-sm ${i <= step ? "text-foreground" : "text-muted/60"}`}>
-                {i < step ? (
-                  <Check className="h-4 w-4 text-accent" />
-                ) : i === step ? (
-                  <Loader2 className="h-4 w-4 animate-spin text-accent" />
-                ) : (
-                  <span className="h-4 w-4" />
-                )}
-                {label}
-              </li>
-            ))}
-          </ol>
-          <p className="mt-6 text-sm text-muted">This usually takes 10 to 20 seconds.</p>
+          <PointCloudLazy compact className="mx-auto aspect-square w-full max-w-[320px]" />
         </div>
       )}
 
