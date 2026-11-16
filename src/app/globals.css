@@ -1,5 +1,6 @@
 @import "tailwindcss";
 
+/* Admin area keeps the original dark tokens. */
 :root {
   --background: #0a0a0a;
   --foreground: #e5e7eb;
@@ -10,6 +11,20 @@
   --accent-muted: rgba(139, 92, 246, 0.12);
 }
 
+/* Public site + user dashboard: clinical light theme. */
+.site {
+  --background: #f3f7f6;
+  --foreground: #0e1f26;
+  --muted: #55676e;
+  --border: #d3dedc;
+  --surface: #ffffff;
+  --accent: #0b7f77;
+  --accent-muted: #dceeea;
+  --accent-ink: #086660;
+  --cavity: #cf4429;
+  --cavity-muted: #fbe4de;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -17,8 +32,13 @@
   --color-border: var(--border);
   --color-surface: var(--surface);
   --color-accent: var(--accent);
+  --color-accent-muted: var(--accent-muted);
+  --color-accent-ink: var(--accent-ink);
+  --color-cavity: var(--cavity);
+  --color-cavity-muted: var(--cavity-muted);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-display), var(--font-geist-sans);
 }
 
 html {
@@ -33,7 +53,37 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-::selection {
-  background: rgba(139, 92, 246, 0.25);
-  color: #fff;
+body:has(.site) {
+  background: #f3f7f6;
+}
+
+.site ::selection {
+  background: #bfe3dc;
+  color: #0e1f26;
+}
+
+.site :focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Marker-style highlight used for complaints and gaps. */
+.mark-cavity {
+  background-image: linear-gradient(transparent 58%, var(--cavity-muted) 58%);
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+@keyframes scan {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(260%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

@@ -18,12 +18,10 @@ The application currently supports:
 
 ## Core user flow
 
-1. A visitor lands on the marketing site.
-2. They create an account or sign in.
-3. From the dashboard, they enter a product name or public URL.
-4. The app scrapes the target content and enriches it with external intelligence sources.
-5. An AI analysis is generated and stored as a report for the user.
-6. The user can review, delete, and manage their reports from the dashboard.
+1. A visitor lands on the marketing site and enters a product name or link. No account is needed.
+2. `/analyze` runs the analysis (`/api/analyze-serpapi`, rate limited per IP) and shows the full report, including ad angles, hooks and scripts. Nothing is stored yet.
+3. The visitor flips the **Save report** switch. Signed-in users save immediately; others get a sign-in / sign-up modal, and the report is saved as soon as they authenticate (a copy is kept in `localStorage` so it survives a redirect and is flushed on the dashboard).
+4. Saved reports live on `/dashboard`, which requires an account (enforced in `src/proxy.ts`).
 
 ## Tech stack
 

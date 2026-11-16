@@ -1,3 +1,4 @@
+import { rateLimit } from "@/lib/rate-limit";
 import { NextResponse } from "next/server";
 import { getJson } from "serpapi";
 import Groq from "groq-sdk";
@@ -511,6 +512,13 @@ async function clusterReviewsByTheme(reviews: any[]): Promise<any[]> {
 }
 
 export async function POST(request: Request) {
+  const limited = rateLimit(request, "reviews", 40);
+  if (!limited.ok) {
+    return NextResponse.json(
+      { error: "Too many requests. Try again later." },
+      { status: 429, headers: { "Retry-After": String(limited.retryAfterSeconds) } }
+    );
+  }
   try {
     const payload = await request.json();
     const productName = payload?.productName || payload?.keyword;

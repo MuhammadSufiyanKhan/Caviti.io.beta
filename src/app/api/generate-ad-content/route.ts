@@ -1,3 +1,4 @@
+import { rateLimit } from "@/lib/rate-limit";
 import { NextResponse } from "next/server";
 
 interface ComplaintTheme {
@@ -37,6 +38,13 @@ interface Script {
 }
 
 export async function POST(request: Request) {
+  const limited = rateLimit(request, "adcontent", 40);
+  if (!limited.ok) {
+    return NextResponse.json(
+      { error: "Too many requests. Try again later." },
+      { status: 429, headers: { "Retry-After": String(limited.retryAfterSeconds) } }
+    );
+  }
   try {
     const payload = await request.json();
     const { complaintThemes, productName } = payload;
